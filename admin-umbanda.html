@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Umbanda</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2.111.0"></script>
+<style>
+  :root{
+    --bg:#F6F2E9; --ink:#1E2A20; --ink-soft:#4B5A4E;
+    --green:#2F4A34; --green-dark:#1B2E20; --gold:#B98A2C; --gold-soft:#E9DCB9;
+    --line:rgba(30,42,32,0.16); --danger:#A33B2E;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter', system-ui, sans-serif; font-size:14px;
+  }
+  .wrap{ max-width:920px; margin:0 auto; padding:28px 20px 80px; }
+  h1{ font-size:20px; margin:0 0 4px; }
+  h2{ font-size:16px; margin:0 0 14px; }
+  .muted{ color:var(--ink-soft); font-size:12.5px; }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  .btn{
+    display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+    border-radius:10px; padding:9px 16px; font-size:13px; font-weight:600;
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+  }
+  .btn-primary{ background:var(--green-dark); color:var(--gold-soft); border-color:var(--green-dark); }
+  .btn-danger{ color:var(--danger); border-color:var(--danger); background:#fff; }
+  .btn-sm{ padding:6px 12px; font-size:12px; }
+
+  /* login gate */
+  .gate{ min-height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:14px; text-align:center; padding:20px; }
+
+  /* tabs */
+  .tabs{ display:flex; gap:8px; margin:18px 0 22px; border-bottom:1px solid var(--line); }
+  .tab-btn{
+    padding:10px 4px; margin-right:18px; font-size:13.5px; font-weight:600;
+    color:var(--ink-soft); cursor:pointer; border-bottom:2px solid transparent;
+  }
+  .tab-btn.active{ color:var(--ink); border-color:var(--gold); }
+
+  .card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:18px; }
+  label{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin:12px 0 5px; }
+  label:first-child{ margin-top:0; }
+  input[type=text], input[type=number], textarea, select{
+    width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:9px;
+    font-family:inherit; font-size:13.5px; background:var(--bg);
+  }
+  textarea{ min-height:80px; resize:vertical; }
+  .row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .checkbox-row{ display:flex; align-items:center; gap:8px; margin-top:14px; }
+  .checkbox-row input{ width:auto; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th, td{ text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  th{ font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-soft); }
+  audio{ height:32px; max-width:180px; }
+  .badge{ display:inline-block; padding:2px 8px; border-radius:100px; font-size:11px; background:var(--gold-soft); color:var(--ink); }
+  .badge.off{ background:#eee; color:var(--ink-soft); }
+
+  #upload-status{ font-size:12.5px; margin-top:8px; color:var(--ink-soft); }
+  #upload-status.error{ color:var(--danger); }
+</style>
+</head>
+<body>
+
+  <!-- ============ LOGIN GATE ============ -->
+  <div id="view-gate" class="gate view active">
+    <h1>Admin — Umbanda</h1>
+    <button class="btn btn-primary" onclick="onSignIn()">Entrar com Google</button>
+    <p class="muted" id="gate-msg"></p>
+  </div>
+
+  <!-- ============ PAINEL ============ -->
+  <div id="view-admin" class="view">
+    <div class="wrap">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h1>Admin — Umbanda</h1>
+          <p class="muted" id="admin-email"></p>
+        </div>
+        <button class="btn btn-sm" onclick="onSignOut()">Sair</button>
+      </div>
+
+      <div class="tabs">
+        <span class="tab-btn active" id="tab-guias" onclick="switchTab('guias')">Guias</span>
+        <span class="tab-btn" id="tab-conteudos" onclick="switchTab('conteudos')">Conteúdos</span>
+      </div>
+
+      <!-- ---------- GUIAS ---------- -->
+      <div id="panel-guias">
+        <div class="card">
+          <h2 id="guia-form-title">Novo guia</h2>
+          <input type="hidden" id="guia-id">
+          <label>Nome</label>
+          <input type="text" id="guia-nome" placeholder="Ogum">
+          <div class="row">
+            <div>
+              <label>Slug (usado na URL, sem espaço)</label>
+              <input type="text" id="guia-slug" placeholder="ogum">
+            </div>
+            <div>
+              <label>Categoria</label>
+              <select id="guia-categoria">
+                <option value="orixa">Orixá</option>
+                <option value="preto_velho">Preto-velho</option>
+                <option value="caboclo">Caboclo</option>
+              </select>
+            </div>
+          </div>
+          <label>Linha (aparece no card do dia)</label>
+          <input type="text" id="guia-linha" placeholder="linha de guerreiro">
+          <label>Descrição</label>
+          <textarea id="guia-descricao" placeholder="Texto curto de apresentação"></textarea>
+          <div class="row">
+            <div>
+              <label>Ordem</label>
+              <input type="number" id="guia-ordem" value="0">
+            </div>
+            <div class="checkbox-row" style="margin-top:32px;">
+              <input type="checkbox" id="guia-ativo" checked>
+              <label style="margin:0;">Ativo (visível no app)</label>
+            </div>
+          </div>
+          <div style="margin-top:16px; display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="saveGuia()">Salvar guia</button>
+            <button class="btn" onclick="resetGuiaForm()">Novo guia</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Guias cadastrados</h2>
+          <table>
+            <thead><tr><th>Nome</th><th>Categoria</th><th>Ordem</th><th>Status</th><th></th></tr></thead>
+            <tbody id="guias-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ---------- CONTEÚDOS ---------- -->
+      <div id="panel-conteudos" style="display:none;">
+        <div class="card">
+          <h2 id="conteudo-form-title">Novo conteúdo</h2>
+          <input type="hidden" id="conteudo-id">
+          <input type="hidden" id="conteudo-audio-url">
+          <input type="hidden" id="conteudo-duracao">
+          <div class="row">
+            <div>
+              <label>Guia</label>
+              <select id="conteudo-guia"></select>
+            </div>
+            <div>
+              <label>Tipo</label>
+              <select id="conteudo-tipo">
+                <option value="ponto">Ponto cantado</option>
+                <option value="oracao">Oração</option>
+              </select>
+            </div>
+          </div>
+          <label>Título</label>
+          <input type="text" id="conteudo-titulo" placeholder="Saudação a Ogum">
+          <label>Letra</label>
+          <textarea id="conteudo-letra" placeholder="Texto completo, mostrado no toggle 'Letra do ponto'"></textarea>
+          <label>Voz (crédito, opcional)</label>
+          <input type="text" id="conteudo-voz" placeholder="Marcos e Ana">
+
+          <label>Áudio (mp3) — deixe em branco pra manter o atual, se estiver editando</label>
+          <input type="file" id="conteudo-arquivo" accept="audio/*">
+          <p id="upload-status"></p>
+          <audio id="conteudo-preview" controls style="display:none; margin-top:8px; width:100%;"></audio>
+
+          <div class="row" style="margin-top:12px;">
+            <div>
+              <label>Ordem</label>
+              <input type="number" id="conteudo-ordem" value="0">
+            </div>
+            <div class="checkbox-row" style="margin-top:32px;">
+              <input type="checkbox" id="conteudo-ativo" checked>
+              <label style="margin:0;">Ativo (visível no app)</label>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; display:flex; gap:10px;">
+            <button class="btn btn-primary" id="btn-salvar-conteudo" onclick="saveConteudo()">Salvar conteúdo</button>
+            <button class="btn" onclick="resetConteudoForm()">Novo conteúdo</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Conteúdos cadastrados</h2>
+          <table>
+            <thead><tr><th>Guia</th><th>Título</th><th>Tipo</th><th>Áudio</th><th></th></tr></thead>
+            <tbody id="conteudos-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  // ==========================================================
+  // CONFIG — mesmos valores usados no app-umbanda.html
+  // ==========================================================
+  const SUPABASE_URL = "https://aewcxqzpbipwcdpsjfht.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_mINpOQLVbi0pilHc9bEtBA_l1a0o6c6";
+  const ADMIN_UUID   = "af619e44-1049-4ebd-86b4-4b4fa3bce94b";
+
+  // Preencher depois de criar o Worker (ver worker-audio-upload.js) —
+  // formato: https://umbanda-audio-upload.<seu-subdominio>.workers.dev
+  const AUDIO_WORKER_URL = "https://umbanda-audio-upload.micaelpsicanalise.workers.dev";
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let session = null;
+  let guiasCache = [];
+  let conteudosCache = [];
+  let pendingAudioFile = null;
+
+  /* ---------------- AUTH ---------------- */
+  async function onSignIn() {
+    await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.href },
+    });
+  }
+
+  async function onSignOut() {
+    await supabaseClient.auth.signOut();
+    location.reload();
+  }
+
+  async function checkSession() {
+    const { data: { session: s } } = await supabaseClient.auth.getSession();
+    if (!s) return showGate("");
+    if (s.user.id !== ADMIN_UUID) {
+      return showGate("Essa conta não tem acesso de admin.");
+    }
+    session = s;
+    document.getElementById("admin-email").textContent = s.user.email;
+    document.getElementById("view-gate").classList.remove("active");
+    document.getElementById("view-admin").classList.add("active");
+    await loadGuias();
+    await loadConteudos();
+  }
+
+  function showGate(msg) {
+    document.getElementById("gate-msg").textContent = msg;
+    document.getElementById("view-gate").classList.add("active");
+    document.getElementById("view-admin").classList.remove("active");
+  }
+
+  /* ---------------- TABS ---------------- */
+  function switchTab(name) {
+    document.getElementById("panel-guias").style.display = name === "guias" ? "block" : "none";
+    document.getElementById("panel-conteudos").style.display = name === "conteudos" ? "block" : "none";
+    document.getElementById("tab-guias").classList.toggle("active", name === "guias");
+    document.getElementById("tab-conteudos").classList.toggle("active", name === "conteudos");
+  }
+
+  /* ---------------- GUIAS ---------------- */
+  async function loadGuias() {
+    const { data, error } = await supabaseClient.from("guias").select("*").order("ordem");
+    if (error) { console.error(error); return; }
+    guiasCache = data || [];
+    renderGuiasTable();
+    renderGuiaSelect();
+  }
+
+  function renderGuiasTable() {
+    const tbody = document.getElementById("guias-table");
+    tbody.innerHTML = guiasCache.map(g => `
+      <tr>
+        <td>${escapeHtml(g.nome)}</td>
+        <td>${g.categoria}</td>
+        <td>${g.ordem}</td>
+        <td><span class="badge ${g.ativo ? "" : "off"}">${g.ativo ? "ativo" : "oculto"}</span></td>
+        <td><button class="btn btn-sm" onclick="editGuia('${g.id}')">Editar</button></td>
+      </tr>
+    `).join("") || `<tr><td colspan="5" class="muted">Nenhum guia ainda.</td></tr>`;
+  }
+
+  function renderGuiaSelect() {
+    const select = document.getElementById("conteudo-guia");
+    select.innerHTML = guiasCache.map(g => `<option value="${g.id}">${escapeHtml(g.nome)}</option>`).join("");
+  }
+
+  function editGuia(id) {
+    const g = guiasCache.find(x => x.id === id);
+    if (!g) return;
+    document.getElementById("guia-id").value = g.id;
+    document.getElementById("guia-nome").value = g.nome || "";
+    document.getElementById("guia-slug").value = g.slug || "";
+    document.getElementById("guia-categoria").value = g.categoria || "orixa";
+    document.getElementById("guia-linha").value = g.linha || "";
+    document.getElementById("guia-descricao").value = g.descricao || "";
+    document.getElementById("guia-ordem").value = g.ordem || 0;
+    document.getElementById("guia-ativo").checked = !!g.ativo;
+    document.getElementById("guia-form-title").textContent = "Editar guia";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetGuiaForm() {
+    document.getElementById("guia-id").value = "";
+    document.getElementById("guia-nome").value = "";
+    document.getElementById("guia-slug").value = "";
+    document.getElementById("guia-categoria").value = "orixa";
+    document.getElementById("guia-linha").value = "";
+    document.getElementById("guia-descricao").value = "";
+    document.getElementById("guia-ordem").value = 0;
+    document.getElementById("guia-ativo").checked = true;
+    document.getElementById("guia-form-title").textContent = "Novo guia";
+  }
+
+  async function saveGuia() {
+    const id = document.getElementById("guia-id").value;
+    const payload = {
+      nome: document.getElementById("guia-nome").value.trim(),
+      slug: document.getElementById("guia-slug").value.trim(),
+      categoria: document.getElementById("guia-categoria").value,
+      linha: document.getElementById("guia-linha").value.trim(),
+      descricao: document.getElementById("guia-descricao").value.trim(),
+      ordem: parseInt(document.getElementById("guia-ordem").value) || 0,
+      ativo: document.getElementById("guia-ativo").checked,
+    };
+    if (!payload.nome || !payload.slug) {
+      alert("Nome e slug são obrigatórios.");
+      return;
+    }
+    const { error } = id
+      ? await supabaseClient.from("guias").update(payload).eq("id", id)
+      : await supabaseClient.from("guias").insert(payload);
+    if (error) { alert("Erro ao salvar: " + error.message); return; }
+    resetGuiaForm();
+    await loadGuias();
+  }
+
+  /* ---------------- CONTEÚDOS ---------------- */
+  async function loadConteudos() {
+    const { data, error } = await supabaseClient.from("conteudos").select("*").order("ordem");
+    if (error) { console.error(error); return; }
+    conteudosCache = data || [];
+    renderConteudosTable();
+  }
+
+  function renderConteudosTable() {
+    const tbody = document.getElementById("conteudos-table");
+    tbody.innerHTML = conteudosCache.map(c => {
+      const guia = guiasCache.find(g => g.id === c.guia_id);
+      return `
+        <tr>
+          <td>${guia ? escapeHtml(guia.nome) : "—"}</td>
+          <td>${escapeHtml(c.titulo)}</td>
+          <td>${c.tipo}</td>
+          <td>${c.audio_url ? `<audio controls src="${c.audio_url}"></audio>` : `<span class="muted">sem áudio</span>`}</td>
+          <td><button class="btn btn-sm" onclick="editConteudo('${c.id}')">Editar</button></td>
+        </tr>
+      `;
+    }).join("") || `<tr><td colspan="5" class="muted">Nenhum conteúdo ainda.</td></tr>`;
+  }
+
+  function editConteudo(id) {
+    const c = conteudosCache.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById("conteudo-id").value = c.id;
+    document.getElementById("conteudo-guia").value = c.guia_id;
+    document.getElementById("conteudo-tipo").value = c.tipo;
+    document.getElementById("conteudo-titulo").value = c.titulo || "";
+    document.getElementById("conteudo-letra").value = c.letra || "";
+    document.getElementById("conteudo-voz").value = c.voz || "";
+    document.getElementById("conteudo-ordem").value = c.ordem || 0;
+    document.getElementById("conteudo-ativo").checked = !!c.ativo;
+    document.getElementById("conteudo-audio-url").value = c.audio_url || "";
+    document.getElementById("conteudo-duracao").value = c.duracao_segundos || "";
+    document.getElementById("conteudo-arquivo").value = "";
+    pendingAudioFile = null;
+    const preview = document.getElementById("conteudo-preview");
+    if (c.audio_url) { preview.src = c.audio_url; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
+    document.getElementById("upload-status").textContent = "";
+    document.getElementById("conteudo-form-title").textContent = "Editar conteúdo";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetConteudoForm() {
+    document.getElementById("conteudo-id").value = "";
+    document.getElementById("conteudo-titulo").value = "";
+    document.getElementById("conteudo-letra").value = "";
+    document.getElementById("conteudo-voz").value = "";
+    document.getElementById("conteudo-ordem").value = 0;
+    document.getElementById("conteudo-ativo").checked = true;
+    document.getElementById("conteudo-audio-url").value = "";
+    document.getElementById("conteudo-duracao").value = "";
+    document.getElementById("conteudo-arquivo").value = "";
+    document.getElementById("conteudo-preview").style.display = "none";
+    document.getElementById("upload-status").textContent = "";
+    pendingAudioFile = null;
+    document.getElementById("conteudo-form-title").textContent = "Novo conteúdo";
+  }
+
+  document.getElementById("conteudo-arquivo").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pendingAudioFile = file;
+    const preview = document.getElementById("conteudo-preview");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+    document.getElementById("upload-status").textContent = `Selecionado: ${file.name} — será enviado ao salvar.`;
+    document.getElementById("upload-status").classList.remove("error");
+  });
+
+  function getAudioDuration(file) {
+    return new Promise((resolve) => {
+      const audio = document.createElement("audio");
+      audio.preload = "metadata";
+      audio.onloadedmetadata = () => resolve(Math.round(audio.duration));
+      audio.src = URL.createObjectURL(file);
+    });
+  }
+
+  async function uploadAudio(file) {
+    if (AUDIO_WORKER_URL.includes("COLE_AQUI")) {
+      throw new Error("Configure AUDIO_WORKER_URL no topo do script antes de subir áudio.");
+    }
+    const resp = await fetch(AUDIO_WORKER_URL + "/upload", {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${session.access_token}`,
+        "Content-Type": file.type || "audio/mpeg",
+        "X-Filename": file.name,
+      },
+      body: file,
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || "Falha no upload");
+    return data.url;
+  }
+
+  async function saveConteudo() {
+    const statusEl = document.getElementById("upload-status");
+    const btn = document.getElementById("btn-salvar-conteudo");
+    const id = document.getElementById("conteudo-id").value;
+
+    let audioUrl = document.getElementById("conteudo-audio-url").value || null;
+    let duracao = document.getElementById("conteudo-duracao").value
+      ? parseInt(document.getElementById("conteudo-duracao").value) : null;
+
+    try {
+      if (pendingAudioFile) {
+        btn.disabled = true;
+        statusEl.classList.remove("error");
+        statusEl.textContent = "Enviando áudio...";
+        duracao = await getAudioDuration(pendingAudioFile);
+        audioUrl = await uploadAudio(pendingAudioFile);
+        statusEl.textContent = "Áudio enviado.";
+      }
+
+      const payload = {
+        guia_id: document.getElementById("conteudo-guia").value,
+        tipo: document.getElementById("conteudo-tipo").value,
+        titulo: document.getElementById("conteudo-titulo").value.trim(),
+        letra: document.getElementById("conteudo-letra").value.trim() || null,
+        voz: document.getElementById("conteudo-voz").value.trim() || null,
+        ordem: parseInt(document.getElementById("conteudo-ordem").value) || 0,
+        ativo: document.getElementById("conteudo-ativo").checked,
+        audio_url: audioUrl,
+        duracao_segundos: duracao,
+      };
+      if (!payload.titulo || !payload.guia_id) {
+        alert("Guia e título são obrigatórios.");
+        btn.disabled = false;
+        return;
+      }
+
+      const { error } = id
+        ? await supabaseClient.from("conteudos").update(payload).eq("id", id)
+        : await supabaseClient.from("conteudos").insert(payload);
+      if (error) throw error;
+
+      resetConteudoForm();
+      await loadConteudos();
+    } catch (err) {
+      statusEl.textContent = "Erro: " + err.message;
+      statusEl.classList.add("error");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  /* ---------------- HELPERS ---------------- */
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str ?? "";
+    return div.innerHTML;
+  }
+
+  document.addEventListener("DOMContentLoaded", checkSession);
+</script>
+</body>
+</html>
