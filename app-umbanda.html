@@ -2,8 +2,17 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Terreiro Digital — protótipo</title>
+
+<!-- PWA: permite "Adicionar à tela inicial" no celular -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1B2E20">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Umbanda">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,36 +38,64 @@
     --radius: 18px;
   }
   *{box-sizing:border-box;}
+  html{ background: #EAE4D3; }
   body{
     margin:0;
     background: var(--bg);
     font-family:'Inter', sans-serif;
     color: var(--ink);
-    display:flex;
-    justify-content:center;
-    padding:32px 16px;
+    min-height:100vh;
+    min-height:100dvh;
   }
   .device{
-    width:380px;
-    background: var(--green-dark);
-    border-radius:36px;
-    padding:14px;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+    width:100%;
+    max-width:480px;
+    margin:0 auto;
+    background: var(--bg);
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    min-height:100dvh;
   }
   .screen{
     background: var(--bg);
-    border-radius:24px;
-    min-height:720px;
     overflow:hidden;
     position:relative;
     display:flex;
     flex-direction:column;
+    flex:1;
   }
-  .status-dot{
-    width:36px; height:4px; background:var(--ink); opacity:0.15;
-    border-radius:2px; margin:10px auto 0;
+  .status-dot{ display:none; }
+
+  /* A partir daqui a tela tem espaço de sobra — em vez de esticar o
+     conteúdo mobile até virar uma faixa fininha no meio de uma tela
+     enorme, ele fica centralizado dentro de uma moldura discreta,
+     como um app aberto num navegador de desktop. */
+  @media (min-width:640px){
+    body{
+      display:flex; justify-content:center; align-items:flex-start;
+      padding:40px 16px;
+    }
+    .device{
+      background: var(--green-dark);
+      border-radius:36px;
+      padding:14px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.28);
+      min-height:0;
+    }
+    .screen{
+      border-radius:24px;
+      min-height:720px;
+      max-height:calc(100vh - 80px);
+    }
+    .status-dot{
+      display:block;
+      width:36px; height:4px; background:var(--ink); opacity:0.15;
+      border-radius:2px; margin:10px auto 0;
+    }
   }
-  .view{ display:none; flex:1; flex-direction:column; padding:20px 20px 0; }
+
+  .view{ display:none; flex:1; flex-direction:column; padding:20px 20px 0; overflow-y:auto; }
   .view.active{ display:flex; }
 
   h1,h2,h3{ font-family:'Fraunces', serif; font-weight:500; margin:0; color:var(--ink); }
@@ -115,7 +152,8 @@
 
   .tabbar{
     display:flex; justify-content:space-around; align-items:center;
-    padding:14px 10px; border-top:1px solid var(--line); margin-top:auto; background:var(--bg);
+    padding:14px 10px calc(14px + env(safe-area-inset-bottom)) 10px;
+    border-top:1px solid var(--line); margin-top:auto; background:var(--bg);
   }
   .tab{
     background:none; border:none; color:var(--ink-soft); font-size:11px;
