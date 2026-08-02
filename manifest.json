@@ -2,7 +2,7 @@
   "name": "Umbanda — Terreiro Digital",
   "short_name": "Umbanda",
   "description": "Guias, pontos cantados e orações, sempre à mão.",
-  "start_url": "./app-umbanda.html",
+  "start_url": "app/",
   "display": "standalone",
   "background_color": "#1B2E20",
   "theme_color": "#1B2E20",
