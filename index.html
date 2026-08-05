@@ -56,6 +56,8 @@
   .btn:hover{ transform:translateY(-1px); }
   .btn-primary{ background:var(--green-dark); color:var(--gold-soft); }
   .btn-primary:hover{ box-shadow:0 8px 20px rgba(27,46,32,0.28); }
+  .btn-gold{ background:var(--gold); color:#fff; }
+  .btn-gold:hover{ box-shadow:0 8px 20px rgba(185,138,44,0.35); }
   .btn-ghost{ border-color:var(--line); color:var(--ink); }
   .btn-sm{ padding:9px 18px; font-size:12.5px; }
 
@@ -86,9 +88,6 @@
   @keyframes spin{ to{ transform:rotate(360deg); } }
   .bar{ animation: pulse 2.4s ease-in-out infinite; transform-origin:center; }
   @keyframes pulse{ 0%,100%{ transform:scaleY(0.5);} 50%{ transform:scaleY(1);} }
-  @media (prefers-reduced-motion:reduce){
-    .ring-anim, .bar{ animation:none !important; }
-  }
 
   /* ---------- FEATURES ---------- */
   section{ padding:88px 0; }
@@ -113,6 +112,62 @@
   .feature-glyph svg{ width:18px; height:18px; }
   .feature-card h3{ font-size:16.5px; margin-bottom:8px; }
   .feature-card p{ font-size:13.5px; color:var(--ink-soft); line-height:1.55; }
+
+  /* ---------- ORÁCULO / BÚZIOS ---------- */
+  .buzios-spot{
+    background: var(--green-dark); color:#fff; position:relative; overflow:hidden;
+  }
+  .buzios-spot .wrap{
+    display:grid; grid-template-columns:1fr; gap:48px; align-items:center;
+  }
+  @media (min-width:820px){
+    .buzios-spot .wrap{ grid-template-columns: 1fr 0.85fr; gap:56px; }
+  }
+  .buzios-copy .eyebrow{ color:var(--gold); }
+  .buzios-copy h2{ color:#fff; font-size:clamp(24px,4vw,32px); margin-top:12px; }
+  .buzios-copy .sub{
+    color:#D9E2DA; font-size:14.5px; line-height:1.65; max-width:440px; margin-top:14px;
+  }
+  .buzios-list{ list-style:none; padding:0; margin:24px 0 0; display:flex; flex-direction:column; gap:11px; }
+  .buzios-list li{
+    display:flex; align-items:flex-start; gap:10px; font-size:13.5px; color:#E4ECE3;
+  }
+  .buzios-list .check{
+    width:16px; height:16px; flex-shrink:0; margin-top:2px; color:var(--gold);
+  }
+  .buzios-copy .hero-ctas{ margin-top:30px; justify-content:flex-start; }
+
+  .buzios-visual{
+    position:relative; width:100%; max-width:320px; aspect-ratio:1; margin:0 auto;
+  }
+  .buzios-mat{
+    position:absolute; inset:0; border-radius:50%;
+    background: radial-gradient(circle at 38% 32%, rgba(233,220,185,0.16), rgba(233,220,185,0.04) 70%);
+    border:1px dashed var(--line-on-dark);
+  }
+  .buzios-ring{
+    position:absolute; inset:14%; border-radius:50%;
+    border:1px solid rgba(185,138,44,0.35);
+  }
+  .shell{
+    position:absolute; width:30px; height:34px;
+    border-radius:40% 40% 45% 45% / 55% 55% 45% 45%;
+    animation: float 5s ease-in-out infinite;
+    transform-origin:center;
+  }
+  .shell.aberto{ background:var(--gold-soft); box-shadow: inset 0 0 0 2px rgba(27,46,32,0.35); }
+  .shell.aberto::after{
+    content:""; display:block; width:52%; height:13%; margin:44% auto 0;
+    background:var(--green-dark); border-radius:6px;
+  }
+  .shell.fechado{ background:#3A4F3D; box-shadow: inset 0 0 0 2px rgba(233,220,185,0.25); }
+  @keyframes float{
+    0%,100%{ transform: translateY(0) rotate(var(--rot, 0deg)); }
+    50%{ transform: translateY(-6px) rotate(calc(var(--rot, 0deg) + 4deg)); }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .ring-anim, .bar, .shell{ animation:none !important; }
+  }
 
   /* ---------- COMO FUNCIONA ---------- */
   .how{ background:var(--bg-warm); }
@@ -163,6 +218,7 @@
       </div>
       <div class="nav-links">
         <a href="#recursos">Recursos</a>
+        <a href="#buzios">Jogo de búzios</a>
         <a href="#como-funciona">Como funciona</a>
       </div>
       <a class="btn btn-primary btn-sm" href="app/">Entrar</a>
@@ -231,6 +287,49 @@
         </div>
         <h3>Sua jornada</h3>
         <p>Acompanhe os dias seguidos de prática e o que você já ouviu, sem pressão — só registro.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ORÁCULO / JOGO DE BÚZIOS ================= -->
+  <section id="buzios" class="buzios-spot">
+    <div class="wrap">
+      <div class="buzios-copy">
+        <p class="eyebrow">Oráculo</p>
+        <h2>Jogue os búzios, aqui mesmo</h2>
+        <p class="sub">Uma consulta rápida, direto do navegador — os búzios caem soltos dentro do círculo, você vê quantos abriram e recebe a leitura na hora.</p>
+        <ul class="buzios-list">
+          <li>
+            <svg class="check" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Sistema de 16 ou 18 búzios, você escolhe</span>
+          </li>
+          <li>
+            <svg class="check" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Leitura de cada resultado, cadastrada pelo terreiro</span>
+          </li>
+          <li>
+            <svg class="check" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Histórico das suas consultas salvo no navegador</span>
+          </li>
+        </ul>
+        <div class="hero-ctas">
+          <a class="btn btn-gold" href="jogo-buzios.html">Jogar os búzios</a>
+        </div>
+      </div>
+
+      <div class="buzios-visual" aria-hidden="true">
+        <div class="buzios-mat"></div>
+        <div class="buzios-ring"></div>
+        <div class="shell aberto"  style="--rot:-8deg;  left:30%; top:20%; animation-delay:-0.2s;"></div>
+        <div class="shell fechado" style="--rot:14deg;  left:55%; top:14%; animation-delay:-1.4s;"></div>
+        <div class="shell fechado" style="--rot:-22deg; left:16%; top:42%; animation-delay:-2.6s;"></div>
+        <div class="shell aberto"  style="--rot:6deg;   left:44%; top:40%; animation-delay:-0.8s;"></div>
+        <div class="shell aberto"  style="--rot:-15deg; left:68%; top:36%; animation-delay:-3.2s;"></div>
+        <div class="shell fechado" style="--rot:20deg;  left:26%; top:62%; animation-delay:-1.9s;"></div>
+        <div class="shell aberto"  style="--rot:-4deg;  left:52%; top:64%; animation-delay:-0.5s;"></div>
+        <div class="shell fechado" style="--rot:10deg;  left:72%; top:58%; animation-delay:-2.2s;"></div>
+        <div class="shell fechado" style="--rot:-18deg; left:38%; top:78%; animation-delay:-1.1s;"></div>
+        <div class="shell aberto"  style="--rot:8deg;   left:60%; top:80%; animation-delay:-3.6s;"></div>
       </div>
     </div>
   </section>
