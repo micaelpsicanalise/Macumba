@@ -90,6 +90,7 @@
       <div class="tabs">
         <span class="tab-btn active" id="tab-guias" onclick="switchTab('guias')">Guias</span>
         <span class="tab-btn" id="tab-conteudos" onclick="switchTab('conteudos')">Conteúdos</span>
+        <span class="tab-btn" id="tab-buzios" onclick="switchTab('buzios')">Búzios</span>
       </div>
 
       <!-- ---------- GUIAS ---------- -->
@@ -212,6 +213,109 @@
         </div>
       </div>
 
+      <!-- ---------- BÚZIOS (Odus) ---------- -->
+      <div id="panel-buzios" style="display:none;">
+        <div class="card">
+          <h2 id="odu-form-title">Novo Odu</h2>
+          <input type="hidden" id="odu-id">
+          <div class="row">
+            <div>
+              <label>Sistema</label>
+              <select id="odu-sistema">
+                <option value="16">16 búzios</option>
+                <option value="18">18 búzios (Angola)</option>
+              </select>
+            </div>
+            <div>
+              <label>Búzios abertos (0 a 16, ou 17/18 no sistema Angola)</label>
+              <input type="number" id="odu-abertos" min="0" max="18" value="0">
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Nome do Odu</label>
+              <input type="text" id="odu-nome" placeholder="Okaran">
+            </div>
+            <div>
+              <label>Orixá / Nkisi (opcional, campo livre)</label>
+              <input type="text" id="odu-orixa" placeholder="Exu">
+            </div>
+          </div>
+          <label>Leitura</label>
+          <textarea id="odu-leitura" placeholder="O texto real dessa jogada, escrito pela casa"></textarea>
+          <div class="row" style="margin-top:12px;">
+            <div>
+              <label>Ordem</label>
+              <input type="number" id="odu-ordem" value="0">
+            </div>
+            <div class="checkbox-row" style="margin-top:32px;">
+              <input type="checkbox" id="odu-ativo" checked>
+              <label style="margin:0;">Ativo</label>
+            </div>
+          </div>
+          <div style="margin-top:16px; display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="saveOdu()">Salvar Odu</button>
+            <button class="btn" onclick="resetOduForm()">Novo Odu</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Odus cadastrados</h2>
+          <p class="muted" style="margin-bottom:10px;">Uma jogada dupla (Odu composto) sem override abaixo é lida automaticamente juntando o texto do Odu "pai" com o do "mãe".</p>
+          <table>
+            <thead><tr><th>Sistema</th><th>Abertos</th><th>Nome</th><th>Orixá/Nkisi</th><th></th></tr></thead>
+            <tbody id="odus-table"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2 id="composto-form-title">Nova combinação composta (override)</h2>
+          <input type="hidden" id="composto-id">
+          <p class="muted">Use só quando quiser um texto próprio pra uma combinação específica — ex: os "Meji" (quando os dois lados dão o mesmo número), que tradicionalmente têm peso especial. Sem cadastro aqui, o app junta os dois textos dos Odus primários automaticamente.</p>
+          <div class="row" style="margin-top:12px;">
+            <div>
+              <label>Sistema</label>
+              <select id="composto-sistema">
+                <option value="16">16 búzios</option>
+                <option value="18">18 búzios (Angola)</option>
+              </select>
+            </div>
+            <div>
+              <label>Nome da combinação (opcional)</label>
+              <input type="text" id="composto-nome" placeholder="Obará Meji">
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Abertos — jogada 1 (pai)</label>
+              <input type="number" id="composto-abertos-pai" min="0" max="18" value="0">
+            </div>
+            <div>
+              <label>Abertos — jogada 2 (mãe)</label>
+              <input type="number" id="composto-abertos-mae" min="0" max="18" value="0">
+            </div>
+          </div>
+          <label>Leitura</label>
+          <textarea id="composto-leitura" placeholder="Texto específico dessa combinação"></textarea>
+          <div class="checkbox-row">
+            <input type="checkbox" id="composto-ativo" checked>
+            <label style="margin:0;">Ativo</label>
+          </div>
+          <div style="margin-top:16px; display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="saveComposto()">Salvar combinação</button>
+            <button class="btn" onclick="resetCompostoForm()">Nova combinação</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Combinações compostas cadastradas</h2>
+          <table>
+            <thead><tr><th>Sistema</th><th>Pai × Mãe</th><th>Nome</th><th></th></tr></thead>
+            <tbody id="compostos-table"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -230,6 +334,8 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   let session = null;
   let guiasCache = [];
+  let odusCache = [];
+  let compostosCache = [];
   let conteudosCache = [];
   let pendingAudioFile = null;
   let pendingImagemFile = null;
@@ -260,6 +366,8 @@
     document.getElementById("view-admin").classList.add("active");
     await loadGuias();
     await loadConteudos();
+    await loadOdus();
+    await loadCompostos();
   }
 
   function showGate(msg) {
@@ -272,8 +380,10 @@
   function switchTab(name) {
     document.getElementById("panel-guias").style.display = name === "guias" ? "block" : "none";
     document.getElementById("panel-conteudos").style.display = name === "conteudos" ? "block" : "none";
+    document.getElementById("panel-buzios").style.display = name === "buzios" ? "block" : "none";
     document.getElementById("tab-guias").classList.toggle("active", name === "guias");
     document.getElementById("tab-conteudos").classList.toggle("active", name === "conteudos");
+    document.getElementById("tab-buzios").classList.toggle("active", name === "buzios");
   }
 
   /* ---------------- GUIAS ---------------- */
@@ -567,6 +677,142 @@
     } finally {
       btn.disabled = false;
     }
+  }
+
+  /* ---------------- BÚZIOS: ODUS PRIMÁRIOS ---------------- */
+  async function loadOdus() {
+    const { data, error } = await supabaseClient.from("buzios_odus").select("*").order("sistema").order("abertos");
+    if (error) { console.error(error); return; }
+    odusCache = data || [];
+    renderOdusTable();
+  }
+
+  function renderOdusTable() {
+    document.getElementById("odus-table").innerHTML = odusCache.map(o => `
+      <tr>
+        <td>${o.sistema}</td>
+        <td>${o.abertos}</td>
+        <td>${escapeHtml(o.nome)}</td>
+        <td>${escapeHtml(o.orixa_nkisi || "—")}</td>
+        <td><button class="btn btn-sm" onclick="editOdu('${o.id}')">Editar</button></td>
+      </tr>
+    `).join("") || `<tr><td colspan="5" class="muted">Nenhum Odu cadastrado ainda.</td></tr>`;
+  }
+
+  function editOdu(id) {
+    const o = odusCache.find(x => x.id === id);
+    if (!o) return;
+    document.getElementById("odu-id").value = o.id;
+    document.getElementById("odu-sistema").value = o.sistema;
+    document.getElementById("odu-abertos").value = o.abertos;
+    document.getElementById("odu-nome").value = o.nome || "";
+    document.getElementById("odu-orixa").value = o.orixa_nkisi || "";
+    document.getElementById("odu-leitura").value = o.leitura || "";
+    document.getElementById("odu-ordem").value = o.ordem || 0;
+    document.getElementById("odu-ativo").checked = !!o.ativo;
+    document.getElementById("odu-form-title").textContent = "Editar Odu";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetOduForm() {
+    document.getElementById("odu-id").value = "";
+    document.getElementById("odu-sistema").value = "16";
+    document.getElementById("odu-abertos").value = 0;
+    document.getElementById("odu-nome").value = "";
+    document.getElementById("odu-orixa").value = "";
+    document.getElementById("odu-leitura").value = "";
+    document.getElementById("odu-ordem").value = 0;
+    document.getElementById("odu-ativo").checked = true;
+    document.getElementById("odu-form-title").textContent = "Novo Odu";
+  }
+
+  async function saveOdu() {
+    const id = document.getElementById("odu-id").value;
+    const payload = {
+      sistema: document.getElementById("odu-sistema").value,
+      abertos: parseInt(document.getElementById("odu-abertos").value),
+      nome: document.getElementById("odu-nome").value.trim(),
+      orixa_nkisi: document.getElementById("odu-orixa").value.trim() || null,
+      leitura: document.getElementById("odu-leitura").value.trim(),
+      ordem: parseInt(document.getElementById("odu-ordem").value) || 0,
+      ativo: document.getElementById("odu-ativo").checked,
+    };
+    if (!payload.nome || !payload.leitura || isNaN(payload.abertos)) {
+      alert("Nome, quantidade de búzios abertos e leitura são obrigatórios.");
+      return;
+    }
+    const { error } = id
+      ? await supabaseClient.from("buzios_odus").update(payload).eq("id", id)
+      : await supabaseClient.from("buzios_odus").insert(payload);
+    if (error) { alert("Erro ao salvar: " + error.message); return; }
+    resetOduForm();
+    await loadOdus();
+  }
+
+  /* ---------------- BÚZIOS: COMBINAÇÕES COMPOSTAS (override) ---------------- */
+  async function loadCompostos() {
+    const { data, error } = await supabaseClient.from("buzios_odus_compostos").select("*").order("sistema");
+    if (error) { console.error(error); return; }
+    compostosCache = data || [];
+    renderCompostosTable();
+  }
+
+  function renderCompostosTable() {
+    document.getElementById("compostos-table").innerHTML = compostosCache.map(c => `
+      <tr>
+        <td>${c.sistema}</td>
+        <td>${c.abertos_pai} × ${c.abertos_mae}</td>
+        <td>${escapeHtml(c.nome || "—")}</td>
+        <td><button class="btn btn-sm" onclick="editComposto('${c.id}')">Editar</button></td>
+      </tr>
+    `).join("") || `<tr><td colspan="4" class="muted">Nenhuma combinação com texto próprio ainda.</td></tr>`;
+  }
+
+  function editComposto(id) {
+    const c = compostosCache.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById("composto-id").value = c.id;
+    document.getElementById("composto-sistema").value = c.sistema;
+    document.getElementById("composto-nome").value = c.nome || "";
+    document.getElementById("composto-abertos-pai").value = c.abertos_pai;
+    document.getElementById("composto-abertos-mae").value = c.abertos_mae;
+    document.getElementById("composto-leitura").value = c.leitura || "";
+    document.getElementById("composto-ativo").checked = !!c.ativo;
+    document.getElementById("composto-form-title").textContent = "Editar combinação composta";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetCompostoForm() {
+    document.getElementById("composto-id").value = "";
+    document.getElementById("composto-sistema").value = "16";
+    document.getElementById("composto-nome").value = "";
+    document.getElementById("composto-abertos-pai").value = 0;
+    document.getElementById("composto-abertos-mae").value = 0;
+    document.getElementById("composto-leitura").value = "";
+    document.getElementById("composto-ativo").checked = true;
+    document.getElementById("composto-form-title").textContent = "Nova combinação composta (override)";
+  }
+
+  async function saveComposto() {
+    const id = document.getElementById("composto-id").value;
+    const payload = {
+      sistema: document.getElementById("composto-sistema").value,
+      abertos_pai: parseInt(document.getElementById("composto-abertos-pai").value),
+      abertos_mae: parseInt(document.getElementById("composto-abertos-mae").value),
+      nome: document.getElementById("composto-nome").value.trim() || null,
+      leitura: document.getElementById("composto-leitura").value.trim(),
+      ativo: document.getElementById("composto-ativo").checked,
+    };
+    if (!payload.leitura || isNaN(payload.abertos_pai) || isNaN(payload.abertos_mae)) {
+      alert("As duas quantidades de búzios abertos e a leitura são obrigatórias.");
+      return;
+    }
+    const { error } = id
+      ? await supabaseClient.from("buzios_odus_compostos").update(payload).eq("id", id)
+      : await supabaseClient.from("buzios_odus_compostos").insert(payload);
+    if (error) { alert("Erro ao salvar: " + error.message); return; }
+    resetCompostoForm();
+    await loadCompostos();
   }
 
   /* ---------------- HELPERS ---------------- */
