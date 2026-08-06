@@ -298,6 +298,7 @@
         <div class="filter" data-cat="entidades" onclick="setBibliotecaCategoria('entidades', this)">Entidades</div>
         <div class="filter" data-cat="pontos" onclick="setBibliotecaCategoria('pontos', this)">Pontos Cantados</div>
         <div class="filter" data-cat="riscados" onclick="setBibliotecaCategoria('riscados', this)">Pontos Riscados</div>
+        <div class="filter" data-cat="itans" onclick="setBibliotecaCategoria('itans', this)">Itans</div>
       </div>
 
       <div id="biblioteca-list" style="overflow-y:auto;">
@@ -612,6 +613,27 @@
         <p style="font-size:13px; color:var(--ink-soft); line-height:1.5; margin-bottom:16px;">${escapeHtml(guia.descricao || "")}</p>
         <div class="signout-btn" onclick="onVerGuiaDoRiscado('${guia.slug}')">Ver pontos e orações de ${escapeHtml(guia.nome)}</div>
       `;
+      return;
+    }
+
+    // Modo "Itans": lista plana de todos os contos/histórias, de qualquer guia
+    if (appState.bibliotecaCategoria === "itans") {
+      const itans = appState.conteudos.filter(c => c.tipo === "conto");
+      container.innerHTML = itans.length
+        ? itans.map(item => {
+            const guia = appState.guias.find(g => g.id === item.guia_id);
+            return `
+              <div class="list-item" onclick="onOpenTrack('${item.id}')">
+                <div class="dot">${dotConteudo(item)}</div>
+                <div class="meta">
+                  <p class="title">${escapeHtml(item.titulo)}</p>
+                  <p class="sub">${guia ? escapeHtml(guia.nome) : "Itã"}</p>
+                </div>
+                <span class="chev">›</span>
+              </div>
+            `;
+          }).join("")
+        : '<p class="empty-note">Nenhum Itã publicado ainda.</p>';
       return;
     }
 
