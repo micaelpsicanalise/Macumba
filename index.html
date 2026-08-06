@@ -100,7 +100,7 @@
     display:grid; grid-template-columns:1fr; gap:16px;
     max-width:1080px; margin:0 auto; padding:0 24px;
   }
-  @media (min-width:760px){ .feature-grid{ grid-template-columns:repeat(3,1fr); } }
+  @media (min-width:760px){ .feature-grid{ grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); } }
   .feature-card{
     background:#fff; border:1px solid var(--line); border-radius:20px;
     padding:28px 24px; text-align:left;
@@ -287,6 +287,13 @@
         </div>
         <h3>Sua jornada</h3>
         <p>Acompanhe os dias seguidos de prática e o que você já ouviu, sem pressão — só registro.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-glyph">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.4 5.6L20 11l-5.6 2.4L12 19l-2.4-5.6L4 11l5.6-2.4L12 3z" stroke="#1B2E20" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Pontos riscados</h3>
+        <p>O símbolo de cada orixá e entidade, pra reconhecer e se aprofundar na assinatura de cada um.</p>
       </div>
     </div>
   </section>
