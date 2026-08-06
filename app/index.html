@@ -293,11 +293,11 @@
       </div>
 
       <div class="filters" id="biblioteca-filters">
-        <!-- setActiveFilter() re-renderiza #biblioteca-list a partir de appState.guias -->
-        <div class="filter active" onclick="setActiveFilter(this, 'todos')">Todos</div>
-        <div class="filter" onclick="setActiveFilter(this, 'orixas')">Orixás</div>
-        <div class="filter" onclick="setActiveFilter(this, 'pretos-velhos')">Pretos-velhos</div>
-        <div class="filter" onclick="setActiveFilter(this, 'caboclos')">Caboclos</div>
+        <!-- setBibliotecaCategoria() re-renderiza #biblioteca-list a partir de appState.guias/conteudos -->
+        <div class="filter active" data-cat="orixas" onclick="setBibliotecaCategoria('orixas', this)">Orixás</div>
+        <div class="filter" data-cat="entidades" onclick="setBibliotecaCategoria('entidades', this)">Entidades</div>
+        <div class="filter" data-cat="pontos" onclick="setBibliotecaCategoria('pontos', this)">Pontos Cantados</div>
+        <div class="filter" data-cat="riscados" onclick="setBibliotecaCategoria('riscados', this)">Pontos Riscados</div>
       </div>
 
       <div id="biblioteca-list" style="overflow-y:auto;">
@@ -417,14 +417,14 @@
     user: null,               // sessão do Supabase Auth
     guias: [],                // todos os guias, carregados uma vez
     conteudos: [],             // todos os conteúdos, carregados uma vez
-    bibliotecaFiltroAtivo: "todos",
+    bibliotecaCategoria: "orixas", // orixas | entidades | pontos | riscados
     bibliotecaGuiaAberto: null, // slug do guia em detalhe, ou null pra lista geral
+    bibliotecaRiscadoAberto: null, // slug do guia com o ponto riscado em detalhe
     isPlaying: false,
     currentTrackId: null,
   };
 
   const CATEGORIA_LABEL = { orixa: "orixás", preto_velho: "pretos-velhos", caboclo: "caboclos" };
-  const CATEGORIA_FILTRO = { orixas: "orixa", "pretos-velhos": "preto_velho", caboclos: "caboclo" };
 
   /* ==========================================================
      NAVEGAÇÃO ENTRE TELAS
@@ -563,11 +563,12 @@
   /* ==========================================================
      BIBLIOTECA
      ========================================================== */
-  function setActiveFilter(el, categoria) {
+  function setBibliotecaCategoria(cat, el) {
     document.querySelectorAll("#biblioteca-filters .filter").forEach(f => f.classList.remove("active"));
     el.classList.add("active");
-    appState.bibliotecaFiltroAtivo = categoria;
+    appState.bibliotecaCategoria = cat;
     appState.bibliotecaGuiaAberto = null;
+    appState.bibliotecaRiscadoAberto = null;
     renderBibliotecaList();
   }
 
@@ -582,7 +583,7 @@
     if (appState.bibliotecaGuiaAberto) {
       const guia = appState.guias.find(g => g.slug === appState.bibliotecaGuiaAberto);
       const conteudos = appState.conteudos.filter(c => c.guia_id === guia.id);
-      let html = `<div class="back-row" onclick="fecharDetalheGuia()">‹ Voltar aos guias</div>`;
+      let html = `<div class="back-row" onclick="fecharDetalheGuia()">‹ Voltar</div>`;
       html += conteudos.length
         ? conteudos.map(item => `
             <div class="list-item" onclick="onOpenTrack('${item.id}')">
@@ -599,11 +600,60 @@
       return;
     }
 
-    // Modo lista geral, filtrada por categoria
-    const categoriaFiltro = CATEGORIA_FILTRO[appState.bibliotecaFiltroAtivo];
-    const lista = categoriaFiltro
-      ? appState.guias.filter(g => g.categoria === categoriaFiltro)
-      : appState.guias;
+    // Modo "detalhe de um ponto riscado": mostra a imagem grande + atalho pro guia
+    if (appState.bibliotecaRiscadoAberto) {
+      const guia = appState.guias.find(g => g.slug === appState.bibliotecaRiscadoAberto);
+      container.innerHTML = `
+        <div class="back-row" onclick="fecharDetalheRiscado()">‹ Voltar</div>
+        <img src="${guia.ponto_riscado_url}" style="width:100%; border-radius:16px; margin-bottom:16px;">
+        <h3 style="margin-bottom:6px;">${escapeHtml(guia.nome)}</h3>
+        <p style="font-size:13px; color:var(--ink-soft); line-height:1.5; margin-bottom:16px;">${escapeHtml(guia.descricao || "")}</p>
+        <div class="signout-btn" onclick="onVerGuiaDoRiscado('${guia.slug}')">Ver pontos e orações de ${escapeHtml(guia.nome)}</div>
+      `;
+      return;
+    }
+
+    // Modo "Pontos Cantados": lista plana de todos os conteúdos tipo ponto, de qualquer guia
+    if (appState.bibliotecaCategoria === "pontos") {
+      const pontos = appState.conteudos.filter(c => c.tipo === "ponto");
+      container.innerHTML = pontos.length
+        ? pontos.map(item => {
+            const guia = appState.guias.find(g => g.id === item.guia_id);
+            return `
+              <div class="list-item" onclick="onOpenTrack('${item.id}')">
+                <div class="dot">▶</div>
+                <div class="meta">
+                  <p class="title">${escapeHtml(item.titulo)}</p>
+                  <p class="sub">${guia ? escapeHtml(guia.nome) + " · " : ""}${formatDuracao(item.duracao_segundos)}</p>
+                </div>
+                <span class="chev">›</span>
+              </div>
+            `;
+          }).join("")
+        : '<p class="empty-note">Nenhum ponto cantado publicado ainda.</p>';
+      return;
+    }
+
+    // Modo "Pontos Riscados": lista plana dos guias que já têm imagem cadastrada
+    if (appState.bibliotecaCategoria === "riscados") {
+      const riscados = appState.guias.filter(g => g.ponto_riscado_url);
+      container.innerHTML = riscados.length
+        ? riscados.map(guia => `
+            <div class="list-item" onclick="onOpenRiscado('${guia.slug}')">
+              <div class="dot" style="padding:0; overflow:hidden;"><img src="${guia.ponto_riscado_url}" style="width:100%; height:100%; object-fit:cover;"></div>
+              <div class="meta"><p class="title">${escapeHtml(guia.nome)}</p><p class="sub">${escapeHtml(guia.linha || "")}</p></div>
+              <span class="chev">›</span>
+            </div>
+          `).join("")
+        : '<p class="empty-note">Nenhum ponto riscado cadastrado ainda.</p>';
+      return;
+    }
+
+    // Modo "Orixás" / "Entidades": lista de guias daquela categoria
+    const categoriasDaAba = appState.bibliotecaCategoria === "orixas"
+      ? ["orixa"]
+      : ["preto_velho", "caboclo"];
+    const lista = appState.guias.filter(g => categoriasDaAba.includes(g.categoria));
 
     container.innerHTML = lista.length
       ? lista.map(guia => `
@@ -626,6 +676,22 @@
 
   function fecharDetalheGuia() {
     appState.bibliotecaGuiaAberto = null;
+    renderBibliotecaList();
+  }
+
+  function onOpenRiscado(slug) {
+    appState.bibliotecaRiscadoAberto = slug;
+    renderBibliotecaList();
+  }
+
+  function fecharDetalheRiscado() {
+    appState.bibliotecaRiscadoAberto = null;
+    renderBibliotecaList();
+  }
+
+  function onVerGuiaDoRiscado(slug) {
+    appState.bibliotecaRiscadoAberto = null;
+    appState.bibliotecaGuiaAberto = slug;
     renderBibliotecaList();
   }
 
