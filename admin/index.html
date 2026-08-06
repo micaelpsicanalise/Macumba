@@ -106,12 +106,27 @@
               <input type="text" id="guia-slug" placeholder="ogum">
             </div>
             <div>
-              <label>Categoria</label>
-              <select id="guia-categoria">
-                <option value="orixa">Orixá</option>
-                <option value="preto_velho">Preto-velho</option>
-                <option value="caboclo">Caboclo</option>
+              <label>Tradição</label>
+              <input type="text" id="guia-tradicao" list="lista-tradicoes" placeholder="umbanda">
+              <datalist id="lista-tradicoes">
+                <option value="umbanda">
+                <option value="candomble">
+                <option value="vodum">
+                <option value="santeria">
+              </datalist>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Grupo</label>
+              <select id="guia-grupo">
+                <option value="principal">Principal (Orixá / Lwa / Orisha / Nkisi...)</option>
+                <option value="auxiliar">Auxiliar (Entidade: preto-velho, caboclo, Gede...)</option>
               </select>
+            </div>
+            <div>
+              <label>Categoria (rótulo livre, só descritivo)</label>
+              <input type="text" id="guia-categoria" placeholder="Preto-velho, Lwa Rada, Orisha...">
             </div>
           </div>
           <label>Linha (aparece no card do dia)</label>
@@ -142,7 +157,7 @@
         <div class="card">
           <h2>Guias cadastrados</h2>
           <table>
-            <thead><tr><th>Nome</th><th>Categoria</th><th>Ordem</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Nome</th><th>Tradição</th><th>Grupo / Categoria</th><th>Ordem</th><th>Status</th><th></th></tr></thead>
             <tbody id="guias-table"></tbody>
           </table>
         </div>
@@ -402,12 +417,13 @@
     tbody.innerHTML = guiasCache.map(g => `
       <tr>
         <td>${escapeHtml(g.nome)}</td>
-        <td>${g.categoria}</td>
+        <td>${escapeHtml(g.tradicao || "umbanda")}</td>
+        <td>${g.grupo === "auxiliar" ? "Auxiliar" : "Principal"}${g.categoria ? " · " + escapeHtml(g.categoria) : ""}</td>
         <td>${g.ordem}</td>
         <td><span class="badge ${g.ativo ? "" : "off"}">${g.ativo ? "ativo" : "oculto"}</span></td>
         <td><button class="btn btn-sm" onclick="editGuia('${g.id}')">Editar</button></td>
       </tr>
-    `).join("") || `<tr><td colspan="5" class="muted">Nenhum guia ainda.</td></tr>`;
+    `).join("") || `<tr><td colspan="6" class="muted">Nenhum guia ainda.</td></tr>`;
   }
 
   function renderGuiaSelect() {
@@ -421,7 +437,9 @@
     document.getElementById("guia-id").value = g.id;
     document.getElementById("guia-nome").value = g.nome || "";
     document.getElementById("guia-slug").value = g.slug || "";
-    document.getElementById("guia-categoria").value = g.categoria || "orixa";
+    document.getElementById("guia-tradicao").value = g.tradicao || "umbanda";
+    document.getElementById("guia-grupo").value = g.grupo || "principal";
+    document.getElementById("guia-categoria").value = g.categoria || "";
     document.getElementById("guia-linha").value = g.linha || "";
     document.getElementById("guia-descricao").value = g.descricao || "";
     document.getElementById("guia-ordem").value = g.ordem || 0;
@@ -441,7 +459,9 @@
     document.getElementById("guia-id").value = "";
     document.getElementById("guia-nome").value = "";
     document.getElementById("guia-slug").value = "";
-    document.getElementById("guia-categoria").value = "orixa";
+    document.getElementById("guia-tradicao").value = "umbanda";
+    document.getElementById("guia-grupo").value = "principal";
+    document.getElementById("guia-categoria").value = "";
     document.getElementById("guia-linha").value = "";
     document.getElementById("guia-descricao").value = "";
     document.getElementById("guia-ordem").value = 0;
@@ -477,7 +497,9 @@
       const payload = {
         nome: document.getElementById("guia-nome").value.trim(),
         slug: document.getElementById("guia-slug").value.trim(),
-        categoria: document.getElementById("guia-categoria").value,
+        tradicao: document.getElementById("guia-tradicao").value.trim().toLowerCase() || "umbanda",
+        grupo: document.getElementById("guia-grupo").value,
+        categoria: document.getElementById("guia-categoria").value.trim() || null,
         linha: document.getElementById("guia-linha").value.trim(),
         descricao: document.getElementById("guia-descricao").value.trim(),
         ordem: parseInt(document.getElementById("guia-ordem").value) || 0,
