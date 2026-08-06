@@ -59,12 +59,12 @@ p{ margin:0; }
   font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
   color: var(--ink-soft); font-weight:500;
 }
-.top-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.top-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; gap:8px; }
 .greeting{ font-size:15px; font-family:'Fraunces', serif; }
 .icon-btn{
   width:34px; height:34px; border-radius:50%; background:var(--card);
   border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
-  color:var(--ink-soft); font-size:15px; cursor:pointer;
+  color:var(--ink-soft); font-size:15px; cursor:pointer; flex-shrink:0;
 }
 .guia-card{
   background: var(--green); color:#fff; border-radius: var(--radius);
@@ -126,6 +126,11 @@ p{ margin:0; }
 .buzio.aberto{ background: var(--green); box-shadow: inset 0 0 0 2px var(--gold-soft); }
 .buzio.aberto::after{ content:""; width:55%; height:14%; background:var(--gold-soft); border-radius:6px; }
 .buzio.fechado{ background: #EDE6D3; box-shadow: inset 0 0 0 2px var(--line); }
+.buzio.testemunha{ box-shadow: inset 0 0 0 2px var(--gold); }
+.buzio.testemunha::before{
+  content:""; position:absolute; inset:-4px; border-radius:50%;
+  border:1.5px dashed var(--gold); opacity:0.8;
+}
 
 .stat-row{ display:flex; gap:10px; margin-bottom:16px; }
 .stat{
@@ -142,9 +147,19 @@ p{ margin:0; }
 .oracle-card .eyebrow{ margin-bottom:6px; }
 .oracle-card h3{ font-size:18px; margin-bottom:8px; }
 .oracle-card p.texto{ font-size:13px; line-height:1.55; color:var(--ink-soft); }
+.oracle-card p.texto + p.texto{ margin-top:10px; }
 .oracle-card .edit-note{
   margin-top:10px; font-size:10.5px; color:var(--gold); border-top:1px dashed var(--line);
   padding-top:8px; line-height:1.4;
+}
+.oracle-card .parte-label{
+  font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--gold);
+  margin-top:12px; margin-bottom:4px; font-weight:600;
+}
+.oracle-card .parte-label:first-of-type{ margin-top:0; }
+
+.progress-note{
+  text-align:center; font-size:12px; color:var(--ink-soft); margin-bottom:14px;
 }
 
 .section-label{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
@@ -185,6 +200,17 @@ p{ margin:0; }
 .tab.active{ color:var(--green); font-weight:600; }
 
 .scroll{ overflow-y:auto; padding-bottom:10px; }
+
+/* ---------- SOBRE ---------- */
+.sobre-block{ margin-bottom:20px; }
+.sobre-block h3{ font-size:15.5px; margin-bottom:6px; }
+.sobre-block p{ font-size:12.5px; line-height:1.6; color:var(--ink-soft); }
+.sobre-block p + p{ margin-top:8px; }
+.sobre-tag{
+  display:inline-block; font-size:10px; text-transform:uppercase; letter-spacing:0.05em;
+  color:var(--gold); font-weight:600; margin-bottom:4px;
+}
+.sobre-divider{ border:none; border-top:1px solid var(--line); margin:18px 0; }
 </style>
 </head>
 <body>
@@ -196,7 +222,10 @@ p{ margin:0; }
     <section id="view-lancar" class="view active">
       <div class="top-row">
         <span class="greeting">Jogo de Búzios</span>
-        <div class="icon-btn" onclick="showView('historico')">≡</div>
+        <div style="display:flex; gap:8px;">
+          <div class="icon-btn" onclick="showView('sobre')" title="Sobre o jogo">?</div>
+          <div class="icon-btn" onclick="showView('historico')" title="Histórico">≡</div>
+        </div>
       </div>
 
       <div class="filters" id="sistema-filters">
@@ -211,6 +240,8 @@ p{ margin:0; }
         <h2 id="throw-title">Toque para lançar</h2>
         <p class="sub" id="throw-sub">Sistema de 16 búzios</p>
       </div>
+
+      <p class="progress-note" id="progress-note" style="display:none;"></p>
 
       <button class="throw-btn" id="btn-lancar" onclick="lancarBuzios()">Lançar búzios</button>
 
@@ -232,6 +263,58 @@ p{ margin:0; }
       <div class="tabbar">
         <button class="tab" onclick="showView('lancar')"><span class="glyph"></span>Lançar</button>
         <button class="tab active" onclick="showView('historico')"><span class="glyph"></span>Histórico</button>
+        <button class="tab" onclick="showView('sobre')"><span class="glyph"></span>Sobre</button>
+      </div>
+    </section>
+
+    <!-- ================= SOBRE ================= -->
+    <section id="view-sobre" class="view">
+      <div class="top-row">
+        <h3>Sobre o jogo</h3>
+        <div class="icon-btn" onclick="showView('lancar')">‹</div>
+      </div>
+      <div class="scroll">
+
+        <div class="sobre-block">
+          <span class="sobre-tag">O oráculo</span>
+          <h3>O que é o jogo de búzios</h3>
+          <p>O jogo de búzios é um oráculo de tradição africana, trazido ao Brasil pelos povos escravizados e mantido vivo até hoje no Candomblé e na Umbanda. As conchas — os búzios — são lançadas sobre uma superfície, e a quantidade que cai com a "boca" (a abertura natural da concha) virada para cima é o que orienta a leitura.</p>
+          <p>Não é um jogo de sorte: é uma consulta. Cada lançamento é lido por quem tem a formação e a autoridade religiosa pra isso, cruzando o resultado com a pergunta feita e com o conhecimento da casa.</p>
+        </div>
+
+        <hr class="sobre-divider">
+
+        <div class="sobre-block">
+          <span class="sobre-tag">Sistema de 16 búzios</span>
+          <h3>Merindilogun, a raiz iorubá</h3>
+          <p>O sistema de 16 búzios (chamado Merindilogun) é o mais difundido no mundo, presente no Candomblé Ketu, na Santería cubana e no Lukumí. Ele deriva diretamente do oráculo de Ifá, praticado pelos povos iorubás (região que hoje corresponde à Nigéria e ao Benin).</p>
+          <p>No Ifá original, um babalaô consulta 16 caminhos principais chamados Odus — cada um associado a arquétipos, forças da natureza e orientações de vida. Quando essa tradição chegou ao Brasil, o jogo de búzios se tornou uma forma mais acessível de consultar esses mesmos 16 Odus, sem exigir os anos de formação específica do sacerdócio de Ifá.</p>
+        </div>
+
+        <hr class="sobre-divider">
+
+        <div class="sobre-block">
+          <span class="sobre-tag">Sistema de 18 búzios</span>
+          <h3>A adaptação da Nação Angola</h3>
+          <p>O sistema de 18 búzios surgiu depois, como uma adaptação brasileira. Os povos de tradição banta (Angola e Congo), que formaram a Nação Angola do Candomblé, não vieram originalmente com o sistema iorubá de Ifá — sua cosmologia é organizada em torno dos Nkisis, não dos Orixás nos mesmos termos.</p>
+          <p>Pra permitir que essas casas consultassem os mesmos 16 Odus sem abandonar sua própria identidade ritual, foram acrescentados 2 búzios extras: as <strong>testemunhas</strong>. Elas não entram na contagem principal — servem como confirmação, ou pra indicar a polaridade da resposta (positiva/Irê ou negativa/Ossogbó), variando de casa pra casa.</p>
+          <p>Por isso, quando caem 17 ou 18 búzios abertos num lançamento de 18, o resultado foge da tabela normal dos 16 Odus — é lido como um aviso direto dos ancestrais, e tradicionalmente pede que o sacerdote pare e faça uma reza antes de seguir.</p>
+        </div>
+
+        <hr class="sobre-divider">
+
+        <div class="sobre-block">
+          <span class="sobre-tag">Como lemos aqui</span>
+          <h3>Duas jogadas, um resultado só</h3>
+          <p>Pra chegar mais perto de como a consulta é feita de verdade, esse jogo faz duas jogadas: a primeira define o Odu "pai", a segunda o Odu "mãe". O cruzamento das duas é o que forma a leitura final — as leituras de cada Odu, e das combinações com texto próprio, são escritas pela própria casa.</p>
+        </div>
+
+      </div>
+
+      <div class="tabbar">
+        <button class="tab" onclick="showView('lancar')"><span class="glyph"></span>Lançar</button>
+        <button class="tab" onclick="showView('historico')"><span class="glyph"></span>Histórico</button>
+        <button class="tab active" onclick="showView('sobre')"><span class="glyph"></span>Sobre</button>
       </div>
     </section>
 
@@ -240,8 +323,7 @@ p{ margin:0; }
 
 <script>
 /* ==========================================================
-   CONFIGURAÇÃO SUPABASE — preencha com os dados do seu projeto
-   (Project Settings > API no painel do Supabase)
+   CONFIGURAÇÃO SUPABASE
    ========================================================== */
 const SUPABASE_URL = "https://aewcxqzpbipwcdpsjfht.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_mINpOQLVbi0pilHc9bEtBA_l1a0o6c6";
@@ -258,68 +340,89 @@ const STORAGE_KEY = "buzios_historico_v1";
 const appState = {
   sistema: 16,
   historico: [],
-  overrides: { 16: {}, 18: {} }, // preenchido a partir do Supabase
+  odus: { 16: {}, 18: {} },       // buzios_odus, indexado por [sistema][abertos]
+  compostos: { 16: {}, 18: {} },  // buzios_odus_compostos, indexado por [sistema]["pai-mae"]
+  jogadaAtual: 0,                 // 0 = ainda não jogou, 1 = jogou a primeira (pai), 2 = concluído
+  odusJogada: [null, null],       // [odu pai, odu mae] da consulta em andamento
 };
 
 /* ==========================================================
-   INTERPRETAÇÃO DOS RESULTADOS
-   --------------------------------------------------------
-   As leituras "oficiais" (nomes/significados que você usa no
-   terreiro) ficam salvas na tabela buzios_leituras do Supabase e
-   são editadas pelo admin em admin-buzios.html. Se não houver
-   override cadastrado pra um resultado, cai numa leitura genérica
-   estrutural (baseada só na proporção aberto/fechado).
+   CARREGAR LEITURAS DO SUPABASE
    ========================================================== */
-async function carregarOverrides() {
+async function carregarLeituras() {
   if (!supabaseClient) return;
   try {
-    const { data, error } = await supabaseClient
-      .from("buzios_leituras")
-      .select("sistema, abertos, titulo, texto");
-    if (error) throw error;
-    const overrides = { 16: {}, 18: {} };
-    (data || []).forEach(row => {
-      if (row.titulo || row.texto) {
-        overrides[row.sistema] = overrides[row.sistema] || {};
-        overrides[row.sistema][row.abertos] = { titulo: row.titulo, texto: row.texto };
-      }
+    const [{ data: odus, error: errOdus }, { data: compostos, error: errCompostos }] = await Promise.all([
+      supabaseClient.from("buzios_odus").select("*").eq("ativo", true),
+      supabaseClient.from("buzios_odus_compostos").select("*").eq("ativo", true),
+    ]);
+    if (errOdus) throw errOdus;
+    if (errCompostos) throw errCompostos;
+
+    const odusPorSistema = { 16: {}, 18: {} };
+    (odus || []).forEach(o => { odusPorSistema[o.sistema][o.abertos] = o; });
+    appState.odus = odusPorSistema;
+
+    const compostosPorSistema = { 16: {}, 18: {} };
+    (compostos || []).forEach(c => {
+      compostosPorSistema[c.sistema][`${c.abertos_pai}-${c.abertos_mae}`] = c;
     });
-    appState.overrides = overrides;
+    appState.compostos = compostosPorSistema;
   } catch (e) {
-    console.warn("Não foi possível carregar leituras do Supabase:", e);
+    console.warn("Não foi possível carregar as leituras do Supabase:", e);
   }
 }
 
-function leituraGenerica(abertos, total) {
-  const razao = abertos / total;
-  let tom, texto;
-  if (abertos === total) {
-    tom = "Abertura total";
-    texto = "Todos os búzios caíram com a boca virada para cima. É um resultado extremo, de forte concentração de força — merece ser lido com calma e, se possível, confirmado por quem tem a formação para interpretar esse tipo de jogo.";
-  } else if (abertos === 0) {
-    tom = "Fechamento total";
-    texto = "Nenhum búzio abriu. Também é um resultado extremo, associado a recolhimento e cautela — vale revisitar a pergunta feita antes do lançamento.";
-  } else if (razao > 0.6) {
-    tom = "Maioria aberta";
-    texto = "A maior parte dos búzios abriu, indicando um momento de movimento e resposta mais direta às questões trazidas.";
-  } else if (razao < 0.4) {
-    tom = "Maioria fechada";
-    texto = "A maior parte dos búzios fechou, sugerindo um momento de espera, escuta interna ou algo ainda não pronto para se revelar.";
-  } else {
-    tom = "Equilíbrio";
-    texto = "O resultado ficou equilibrado entre abertos e fechados — sinal de que forças distintas estão em jogo ao mesmo tempo.";
-  }
+/* ==========================================================
+   INTERPRETAÇÃO
+   ========================================================== */
+function ehExcecaoAngola(sistema, abertos) {
+  return sistema === 18 && abertos >= 17;
+}
+
+function leituraExcecaoAngola(abertos) {
   return {
-    titulo: `${abertos} de ${total} abertos — ${tom}`,
-    texto,
+    titulo: `${abertos} abertos — Aviso das testemunhas`,
+    texto: "As duas testemunhas se somaram à contagem principal. Tradicionalmente, isso é lido como um chamado direto dos ancestrais — não entra na tabela comum dos 16 Odus. Pare e faça uma reza antes de seguir com a consulta.",
     generico: true,
   };
 }
 
-function getLeitura(sistema, abertos) {
-  const override = appState.overrides[sistema] && appState.overrides[sistema][abertos];
-  if (override && (override.titulo || override.texto)) return { ...override, generico: false };
-  return leituraGenerica(abertos, sistema);
+function leituraOduGenerica(abertos, total) {
+  return {
+    nome: `${abertos} de ${total} abertos`,
+    leitura: "Ainda sem leitura cadastrada pra esse Odu — cadastre o texto oficial no painel admin, aba Búzios.",
+    generico: true,
+  };
+}
+
+function getOdu(sistema, abertos) {
+  const odu = appState.odus[sistema] && appState.odus[sistema][abertos];
+  if (odu) return { ...odu, generico: false };
+  return leituraOduGenerica(abertos, sistema);
+}
+
+// Combina os dois Odus (pai + mãe) numa leitura única — usa o override
+// de buzios_odus_compostos se existir; senão, junta os dois textos.
+function getLeituraComposta(sistema, oduPai, oduMae, abertosPai, abertosMae) {
+  const override = appState.compostos[sistema] && appState.compostos[sistema][`${abertosPai}-${abertosMae}`];
+  if (override) {
+    return {
+      titulo: override.nome || `${oduPai.nome} - ${oduMae.nome}`,
+      partes: [{ label: null, texto: override.leitura }],
+      generico: false,
+    };
+  }
+  const meji = abertosPai === abertosMae;
+  const titulo = meji ? `${oduPai.nome} Meji` : `${oduPai.nome} - ${oduMae.nome}`;
+  return {
+    titulo,
+    partes: [
+      { label: oduPai.nome, texto: oduPai.leitura },
+      { label: oduMae.nome, texto: oduMae.leitura },
+    ],
+    generico: oduPai.generico || oduMae.generico,
+  };
 }
 
 /* ==========================================================
@@ -362,17 +465,25 @@ function setSistema(el, valor) {
   document.querySelectorAll("#sistema-filters .filter").forEach(f => f.classList.remove("active"));
   el.classList.add("active");
   appState.sistema = valor;
-  document.getElementById("throw-sub").textContent = `Sistema de ${valor} búzios`;
+  reiniciarConsulta();
+}
+
+function reiniciarConsulta() {
+  appState.jogadaAtual = 0;
+  appState.odusJogada = [null, null];
+  document.getElementById("throw-sub").textContent = `Sistema de ${appState.sistema} búzios`;
+  document.getElementById("throw-eyebrow").textContent = "Pronto para consultar";
+  document.getElementById("throw-title").textContent = "Toque para lançar";
   document.getElementById("resultado-area").innerHTML = "";
   document.getElementById("buzios-circle").innerHTML = "";
+  document.getElementById("btn-lancar").textContent = "Lançar búzios";
+  const note = document.getElementById("progress-note");
+  note.style.display = "none";
+  note.textContent = "";
 }
 
 /* ==========================================================
    ESPALHAMENTO DENTRO DO CÍRCULO
-   --------------------------------------------------------
-   Distribuição uniforme por área (raio = R * sqrt(random)),
-   com tentativas de evitar sobreposição forte entre búzios,
-   e rotação aleatória pra parecer "jogado", não alinhado.
    ========================================================== */
 function gerarPosicoes(qtd, containerPx, shellPx) {
   const R = containerPx / 2;
@@ -396,8 +507,6 @@ function gerarPosicoes(qtd, containerPx, shellPx) {
         melhor = { x, y };
         break;
       }
-      // guarda a melhor tentativa mesmo com sobreposição leve,
-      // caso não consiga um espaço totalmente livre
       if (!melhor || distMin > melhor.dist) melhor = { x, y, dist: distMin };
     }
     posicoes.push({
@@ -410,22 +519,26 @@ function gerarPosicoes(qtd, containerPx, shellPx) {
 }
 
 /* ==========================================================
-   LANÇAMENTO
+   LANÇAMENTO — duas jogadas cruzadas (Odu composto)
    ========================================================== */
 function lancarBuzios() {
   const btn = document.getElementById("btn-lancar");
   const circle = document.getElementById("buzios-circle");
-  const total = appState.sistema;
+  const sistema = appState.sistema;
+  const numeroDaJogada = appState.jogadaAtual + 1; // 1 = pai, 2 = mae
 
   btn.disabled = true;
-  document.getElementById("throw-eyebrow").textContent = "Lançando…";
-  document.getElementById("throw-title").textContent = "Consultando";
   document.getElementById("resultado-area").innerHTML = "";
+  document.getElementById("throw-eyebrow").textContent =
+    numeroDaJogada === 1 ? "Primeira jogada (Odu pai)…" : "Segunda jogada (Odu mãe)…";
+  document.getElementById("throw-title").textContent = "Lançando…";
 
-  // gera resultado: cada búzio tem ~45% de chance de abrir
-  // (leve viés para "fechado", como no jogo físico com búzios limados)
+  // Cada búzio tem ~45% de chance de abrir (leve viés pra "fechado",
+  // como no jogo físico com búzios limados na base).
+  const total = sistema;
   const resultados = Array.from({ length: total }, () => Math.random() < 0.45);
   const abertos = resultados.filter(Boolean).length;
+  const testemunhas = sistema === 18 ? [total - 2, total - 1] : []; // últimos 2 índices são as testemunhas
 
   circle.innerHTML = "";
   const containerPx = circle.clientWidth;
@@ -434,7 +547,8 @@ function lancarBuzios() {
 
   resultados.forEach((aberto, i) => {
     const div = document.createElement("div");
-    div.className = "buzio " + (aberto ? "aberto" : "fechado");
+    const ehTestemunha = testemunhas.includes(i);
+    div.className = "buzio " + (aberto ? "aberto" : "fechado") + (ehTestemunha ? " testemunha" : "");
     const p = posicoes[i];
     div.style.width = shellPx + "px";
     div.style.height = Math.round(shellPx * 1.12) + "px";
@@ -448,36 +562,92 @@ function lancarBuzios() {
   });
 
   setTimeout(() => {
-    document.getElementById("throw-eyebrow").textContent = "Resultado";
-    document.getElementById("throw-title").textContent = `${abertos} abertos, ${total - abertos} fechados`;
+    appState.odusJogada[numeroDaJogada - 1] = abertos;
 
-    const leitura = getLeitura(total, abertos);
-    mostrarResultado(leitura, total, abertos);
+    if (numeroDaJogada === 1) {
+      // Guarda a jogada 1 e prepara a segunda
+      appState.jogadaAtual = 1;
+      document.getElementById("throw-eyebrow").textContent = "Jogada 1 (Odu pai)";
+      document.getElementById("throw-title").textContent = `${abertos} abertos, ${total - abertos} fechados`;
+      const note = document.getElementById("progress-note");
+      note.style.display = "block";
+      note.textContent = "Jogada 1 registrada — toque de novo pra fazer a segunda jogada (Odu mãe).";
+      btn.textContent = "Lançar segunda jogada";
+      btn.disabled = false;
+    } else {
+      // Segunda jogada — fecha a consulta e monta o resultado composto
+      appState.jogadaAtual = 2;
+      document.getElementById("throw-eyebrow").textContent = "Jogada 2 (Odu mãe)";
+      document.getElementById("throw-title").textContent = `${abertos} abertos, ${total - abertos} fechados`;
+      document.getElementById("progress-note").style.display = "none";
+      btn.textContent = "Nova consulta";
 
-    appState.historico.unshift({
-      data: new Date().toISOString(),
-      sistema: total,
-      abertos,
-      titulo: leitura.titulo,
-    });
-    salvarHistorico();
-
-    btn.disabled = false;
+      const [abertosPai, abertosMae] = appState.odusJogada;
+      concluirConsulta(sistema, abertosPai, abertosMae);
+      btn.disabled = false;
+    }
   }, 25 * total + 500);
 }
 
-function mostrarResultado(leitura, total, abertos) {
+function concluirConsulta(sistema, abertosPai, abertosMae) {
+  // Se qualquer uma das duas jogadas caiu na exceção Angola (17/18
+  // abertos), a consulta para ali — não forma Odu composto.
+  if (ehExcecaoAngola(sistema, abertosPai)) return mostrarExcecao(abertosPai, "primeira");
+  if (ehExcecaoAngola(sistema, abertosMae)) return mostrarExcecao(abertosMae, "segunda");
+
+  const oduPai = getOdu(sistema, abertosPai);
+  const oduMae = getOdu(sistema, abertosMae);
+  const leitura = getLeituraComposta(sistema, oduPai, oduMae, abertosPai, abertosMae);
+
+  mostrarResultado(leitura, sistema, abertosPai, abertosMae);
+
+  appState.historico.unshift({
+    data: new Date().toISOString(),
+    sistema,
+    abertosPai,
+    abertosMae,
+    titulo: leitura.titulo,
+  });
+  salvarHistorico();
+}
+
+function mostrarExcecao(abertos, qualJogada) {
+  const leitura = leituraExcecaoAngola(abertos);
   const area = document.getElementById("resultado-area");
   area.innerHTML = `
+    <div class="oracle-card">
+      <p class="eyebrow">Resultado especial — ${qualJogada} jogada</p>
+      <h3>${leitura.titulo}</h3>
+      <p class="texto">${leitura.texto}</p>
+    </div>
+  `;
+  appState.historico.unshift({
+    data: new Date().toISOString(),
+    sistema: appState.sistema,
+    abertosPai: null,
+    abertosMae: null,
+    titulo: leitura.titulo,
+  });
+  salvarHistorico();
+}
+
+function mostrarResultado(leitura, sistema, abertosPai, abertosMae) {
+  const area = document.getElementById("resultado-area");
+  const partesHtml = leitura.partes.map(parte => `
+    ${parte.label ? `<p class="parte-label">${parte.label}</p>` : ""}
+    <p class="texto">${parte.texto}</p>
+  `).join("");
+
+  area.innerHTML = `
     <div class="stat-row">
-      <div class="stat"><p class="num">${abertos}</p><p class="label">abertos</p></div>
-      <div class="stat"><p class="num">${total - abertos}</p><p class="label">fechados</p></div>
+      <div class="stat"><p class="num">${abertosPai}</p><p class="label">jogada 1 (pai)</p></div>
+      <div class="stat"><p class="num">${abertosMae}</p><p class="label">jogada 2 (mãe)</p></div>
     </div>
     <div class="oracle-card">
       <p class="eyebrow">Leitura</p>
       <h3>${leitura.titulo}</h3>
-      <p class="texto">${leitura.texto}</p>
-      ${leitura.generico ? '<p class="edit-note">Leitura estrutural genérica — cadastre o texto oficial pra este resultado no painel admin.</p>' : ''}
+      ${partesHtml}
+      ${leitura.generico ? '<p class="edit-note">Leitura ainda incompleta — cadastre os Odus dessa jogada no painel admin, aba Búzios.</p>' : ''}
     </div>
   `;
 }
@@ -495,9 +665,12 @@ function renderHistorico() {
     const data = new Date(item.data);
     const dataFmt = data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
     const horaFmt = data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    const dotLabel = (item.abertosPai !== null && item.abertosPai !== undefined)
+      ? `${item.abertosPai}·${item.abertosMae}`
+      : "!";
     return `
       <div class="list-item">
-        <div class="dot">${item.abertos}</div>
+        <div class="dot">${dotLabel}</div>
         <div class="meta">
           <p class="title">${item.titulo}</p>
           <p class="sub">${item.sistema} búzios · ${dataFmt} às ${horaFmt}</p>
@@ -514,7 +687,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   carregarHistorico();
   const btn = document.getElementById("btn-lancar");
   btn.disabled = true;
-  await carregarOverrides();
+  await carregarLeituras();
   btn.disabled = false;
 });
 </script>
