@@ -32,8 +32,6 @@
   .btn-primary{ background:var(--green-dark); color:var(--gold-soft); border-color:var(--green-dark); }
   .btn-danger{ color:var(--danger); border-color:var(--danger); background:#fff; }
   .btn-sm{ padding:6px 12px; font-size:12px; }
-  .btn-toggle{ border-radius:100px; }
-  .btn-toggle.active{ background:var(--green-dark); color:var(--gold-soft); border-color:var(--green-dark); }
 
   /* login gate */
   .gate{ min-height:100vh; align-items:center; justify-content:center; flex-direction:column; gap:14px; text-align:center; padding:20px; }
@@ -92,7 +90,6 @@
       <div class="tabs">
         <span class="tab-btn active" id="tab-guias" onclick="switchTab('guias')">Guias</span>
         <span class="tab-btn" id="tab-conteudos" onclick="switchTab('conteudos')">Conteúdos</span>
-        <span class="tab-btn" id="tab-buzios" onclick="switchTab('buzios')">Búzios</span>
       </div>
 
       <!-- ---------- GUIAS ---------- -->
@@ -120,6 +117,11 @@
           <input type="text" id="guia-linha" placeholder="linha de guerreiro">
           <label>Descrição</label>
           <textarea id="guia-descricao" placeholder="Texto curto de apresentação"></textarea>
+          <label>Ponto riscado (imagem) — deixe em branco pra manter o atual</label>
+          <input type="hidden" id="guia-ponto-riscado-url">
+          <input type="file" id="guia-riscado-arquivo" accept="image/*">
+          <p id="guia-riscado-upload-status" class="muted" style="margin-top:6px;"></p>
+          <img id="guia-riscado-preview" style="display:none; width:120px; height:120px; object-fit:cover; border-radius:12px; margin-top:8px;">
           <div class="row">
             <div>
               <label>Ordem</label>
@@ -203,47 +205,6 @@
         </div>
       </div>
 
-      <!-- ---------- BÚZIOS ---------- -->
-      <div id="panel-buzios" style="display:none;">
-        <div class="card">
-          <h2 id="buzio-form-title">Leitura de búzios</h2>
-          <p class="muted" style="margin-bottom:14px;">
-            Cada combinação de sistema (16/18) + quantidade de búzios abertos tem um título e um
-            texto. O jogo (<code>jogo-buzios.html</code>) busca essa tabela direto do Supabase;
-            se não houver leitura cadastrada pra um resultado, ele usa uma leitura genérica
-            automática até você preencher aqui.
-          </p>
-
-          <label>Sistema</label>
-          <div style="display:flex; gap:8px;">
-            <button type="button" class="btn btn-toggle active" id="buzio-sistema-16" onclick="setBuzioSistema(16)">16 búzios</button>
-            <button type="button" class="btn btn-toggle" id="buzio-sistema-18" onclick="setBuzioSistema(18)">18 búzios</button>
-          </div>
-
-          <label>Quantidade de búzios abertos</label>
-          <select id="buzio-abertos"></select>
-
-          <label>Título</label>
-          <input type="text" id="buzio-titulo" placeholder="Ex.: nome do Odù usado na sua tradição">
-
-          <label>Texto da leitura</label>
-          <textarea id="buzio-texto" placeholder="Significado, conselhos, observações..."></textarea>
-
-          <div style="margin-top:16px; display:flex; gap:10px;">
-            <button class="btn btn-primary" onclick="saveBuzio()">Salvar leitura</button>
-            <button class="btn" onclick="resetBuzioForm()">Limpar campos</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2>Leituras cadastradas — <span id="buzio-table-sistema-label">16 búzios</span></h2>
-          <table>
-            <thead><tr><th>Abertos</th><th>Título</th><th>Status</th><th></th></tr></thead>
-            <tbody id="buzios-table"></tbody>
-          </table>
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -263,9 +224,8 @@
   let session = null;
   let guiasCache = [];
   let conteudosCache = [];
-  let buziosCache = [];
-  let buzioSistemaAtivo = 16;
   let pendingAudioFile = null;
+  let pendingRiscadoFile = null;
 
   /* ---------------- AUTH ---------------- */
   async function onSignIn() {
@@ -292,7 +252,6 @@
     document.getElementById("view-admin").classList.add("active");
     await loadGuias();
     await loadConteudos();
-    await loadBuzios();
   }
 
   function showGate(msg) {
@@ -305,10 +264,8 @@
   function switchTab(name) {
     document.getElementById("panel-guias").style.display = name === "guias" ? "block" : "none";
     document.getElementById("panel-conteudos").style.display = name === "conteudos" ? "block" : "none";
-    document.getElementById("panel-buzios").style.display = name === "buzios" ? "block" : "none";
     document.getElementById("tab-guias").classList.toggle("active", name === "guias");
     document.getElementById("tab-conteudos").classList.toggle("active", name === "conteudos");
-    document.getElementById("tab-buzios").classList.toggle("active", name === "buzios");
   }
 
   /* ---------------- GUIAS ---------------- */
@@ -349,6 +306,13 @@
     document.getElementById("guia-descricao").value = g.descricao || "";
     document.getElementById("guia-ordem").value = g.ordem || 0;
     document.getElementById("guia-ativo").checked = !!g.ativo;
+    document.getElementById("guia-ponto-riscado-url").value = g.ponto_riscado_url || "";
+    document.getElementById("guia-riscado-arquivo").value = "";
+    document.getElementById("guia-riscado-upload-status").textContent = "";
+    pendingRiscadoFile = null;
+    const preview = document.getElementById("guia-riscado-preview");
+    if (g.ponto_riscado_url) { preview.src = g.ponto_riscado_url; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
     document.getElementById("guia-form-title").textContent = "Editar guia";
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -362,30 +326,57 @@
     document.getElementById("guia-descricao").value = "";
     document.getElementById("guia-ordem").value = 0;
     document.getElementById("guia-ativo").checked = true;
+    document.getElementById("guia-ponto-riscado-url").value = "";
+    document.getElementById("guia-riscado-arquivo").value = "";
+    document.getElementById("guia-riscado-upload-status").textContent = "";
+    document.getElementById("guia-riscado-preview").style.display = "none";
+    pendingRiscadoFile = null;
     document.getElementById("guia-form-title").textContent = "Novo guia";
   }
 
+  document.getElementById("guia-riscado-arquivo").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pendingRiscadoFile = file;
+    const preview = document.getElementById("guia-riscado-preview");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+    document.getElementById("guia-riscado-upload-status").textContent = `Selecionado: ${file.name} — será enviado ao salvar.`;
+  });
+
   async function saveGuia() {
+    const statusEl = document.getElementById("guia-riscado-upload-status");
     const id = document.getElementById("guia-id").value;
-    const payload = {
-      nome: document.getElementById("guia-nome").value.trim(),
-      slug: document.getElementById("guia-slug").value.trim(),
-      categoria: document.getElementById("guia-categoria").value,
-      linha: document.getElementById("guia-linha").value.trim(),
-      descricao: document.getElementById("guia-descricao").value.trim(),
-      ordem: parseInt(document.getElementById("guia-ordem").value) || 0,
-      ativo: document.getElementById("guia-ativo").checked,
-    };
-    if (!payload.nome || !payload.slug) {
-      alert("Nome e slug são obrigatórios.");
-      return;
+    let riscadoUrl = document.getElementById("guia-ponto-riscado-url").value || null;
+    try {
+      if (pendingRiscadoFile) {
+        statusEl.textContent = "Enviando imagem...";
+        riscadoUrl = await uploadAudio(pendingRiscadoFile);
+        statusEl.textContent = "Imagem enviada.";
+      }
+      const payload = {
+        nome: document.getElementById("guia-nome").value.trim(),
+        slug: document.getElementById("guia-slug").value.trim(),
+        categoria: document.getElementById("guia-categoria").value,
+        linha: document.getElementById("guia-linha").value.trim(),
+        descricao: document.getElementById("guia-descricao").value.trim(),
+        ordem: parseInt(document.getElementById("guia-ordem").value) || 0,
+        ativo: document.getElementById("guia-ativo").checked,
+        ponto_riscado_url: riscadoUrl,
+      };
+      if (!payload.nome || !payload.slug) {
+        alert("Nome e slug são obrigatórios.");
+        return;
+      }
+      const { error } = id
+        ? await supabaseClient.from("guias").update(payload).eq("id", id)
+        : await supabaseClient.from("guias").insert(payload);
+      if (error) throw error;
+      resetGuiaForm();
+      await loadGuias();
+    } catch (err) {
+      statusEl.textContent = "Erro: " + err.message;
     }
-    const { error } = id
-      ? await supabaseClient.from("guias").update(payload).eq("id", id)
-      : await supabaseClient.from("guias").insert(payload);
-    if (error) { alert("Erro ao salvar: " + error.message); return; }
-    resetGuiaForm();
-    await loadGuias();
   }
 
   /* ---------------- CONTEÚDOS ---------------- */
@@ -538,97 +529,6 @@
     } finally {
       btn.disabled = false;
     }
-  }
-
-  /* ---------------- BÚZIOS ---------------- */
-  async function loadBuzios() {
-    const { data, error } = await supabaseClient
-      .from("buzios_leituras")
-      .select("*")
-      .order("sistema").order("abertos");
-    if (error) { console.error(error); return; }
-    buziosCache = data || [];
-    populateBuzioAbertosSelect();
-    renderBuziosTable();
-  }
-
-  function setBuzioSistema(sistema) {
-    buzioSistemaAtivo = sistema;
-    document.getElementById("buzio-sistema-16").classList.toggle("active", sistema === 16);
-    document.getElementById("buzio-sistema-18").classList.toggle("active", sistema === 18);
-    document.getElementById("buzio-table-sistema-label").textContent = sistema + " búzios";
-    populateBuzioAbertosSelect();
-    renderBuziosTable();
-  }
-
-  function populateBuzioAbertosSelect() {
-    const select = document.getElementById("buzio-abertos");
-    const atual = select.value;
-    let opts = "";
-    for (let n = 0; n <= buzioSistemaAtivo; n++) {
-      const existente = buziosCache.find(b => b.sistema === buzioSistemaAtivo && b.abertos === n);
-      opts += `<option value="${n}">${n} abertos${existente ? " — cadastrado" : ""}</option>`;
-    }
-    select.innerHTML = opts;
-    if (atual !== "" && Number(atual) <= buzioSistemaAtivo) select.value = atual;
-    onBuzioAbertosChange();
-  }
-
-  function onBuzioAbertosChange() {
-    const abertos = parseInt(document.getElementById("buzio-abertos").value);
-    const existente = buziosCache.find(b => b.sistema === buzioSistemaAtivo && b.abertos === abertos);
-    document.getElementById("buzio-titulo").value = existente ? (existente.titulo || "") : "";
-    document.getElementById("buzio-texto").value = existente ? (existente.texto || "") : "";
-    document.getElementById("buzio-form-title").textContent = existente
-      ? `Editar leitura — ${abertos} abertos (${buzioSistemaAtivo} búzios)`
-      : `Nova leitura — ${abertos} abertos (${buzioSistemaAtivo} búzios)`;
-  }
-  document.getElementById("buzio-abertos").addEventListener("change", onBuzioAbertosChange);
-
-  function renderBuziosTable() {
-    const tbody = document.getElementById("buzios-table");
-    const linhas = buziosCache.filter(b => b.sistema === buzioSistemaAtivo);
-    tbody.innerHTML = linhas.map(b => `
-      <tr>
-        <td>${b.abertos}</td>
-        <td>${escapeHtml(b.titulo || "")}</td>
-        <td><span class="badge ${b.titulo || b.texto ? "" : "off"}">${b.titulo || b.texto ? "preenchida" : "vazia"}</span></td>
-        <td><button class="btn btn-sm" onclick="editBuzio(${b.sistema}, ${b.abertos})">Editar</button></td>
-      </tr>
-    `).join("") || `<tr><td colspan="4" class="muted">Nenhuma leitura cadastrada pra ${buzioSistemaAtivo} búzios ainda.</td></tr>`;
-  }
-
-  function editBuzio(sistema, abertos) {
-    setBuzioSistema(sistema);
-    document.getElementById("buzio-abertos").value = abertos;
-    onBuzioAbertosChange();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function resetBuzioForm() {
-    document.getElementById("buzio-titulo").value = "";
-    document.getElementById("buzio-texto").value = "";
-  }
-
-  async function saveBuzio() {
-    const abertos = parseInt(document.getElementById("buzio-abertos").value);
-    const payload = {
-      sistema: buzioSistemaAtivo,
-      abertos: abertos,
-      titulo: document.getElementById("buzio-titulo").value.trim(),
-      texto: document.getElementById("buzio-texto").value.trim(),
-    };
-    const { data, error } = await supabaseClient
-      .from("buzios_leituras")
-      .upsert(payload, { onConflict: "sistema,abertos" })
-      .select()
-      .single();
-    if (error) { alert("Erro ao salvar: " + error.message); return; }
-
-    const idx = buziosCache.findIndex(b => b.sistema === payload.sistema && b.abertos === payload.abertos);
-    if (idx >= 0) buziosCache[idx] = data; else buziosCache.push(data);
-    populateBuzioAbertosSelect();
-    renderBuziosTable();
   }
 
   /* ---------------- HELPERS ---------------- */
