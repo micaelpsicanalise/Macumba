@@ -122,7 +122,7 @@
   .list-item .dot{
     width:36px; height:36px; border-radius:50%; background: var(--gold-soft);
     flex-shrink:0; display:flex; align-items:center; justify-content:center;
-    color: var(--gold); font-size:14px; font-family:'Fraunces', serif;
+    color: var(--gold); font-size:14px; font-family:'Fraunces', serif; overflow:hidden;
   }
   .list-item .meta{ flex:1; }
   .list-item .title{ font-size:13.5px; font-weight:500; }
@@ -336,36 +336,38 @@
     <section id="view-player" class="view">
       <div class="back-row" onclick="showView('biblioteca')">‹ Voltar</div>
 
-      <div class="art"><div class="ring"></div></div>
+      <div class="art" id="player-art"><div class="ring"></div></div>
       <h3 class="track-title" id="player-title">Ponto cantado de Ogum</h3>
       <p class="track-sub" id="player-sub">Voz: Marcos e Ana</p>
 
-      <div class="waveform" id="player-waveform">
-        <!-- TODO: gerar barras a partir da forma de onda real do áudio -->
-        <div class="bar played" style="height:20%"></div>
-        <div class="bar played" style="height:55%"></div>
-        <div class="bar played" style="height:35%"></div>
-        <div class="bar played" style="height:70%"></div>
-        <div class="bar" style="height:25%"></div>
-        <div class="bar" style="height:45%"></div>
-        <div class="bar" style="height:30%"></div>
-        <div class="bar" style="height:60%"></div>
-        <div class="bar" style="height:20%"></div>
-        <div class="bar" style="height:50%"></div>
-      </div>
-      <div class="time-row">
-        <span id="player-time-current">1:12</span>
-        <span id="player-time-total">3:00</span>
+      <div id="player-audio-section">
+        <div class="waveform" id="player-waveform">
+          <!-- TODO: gerar barras a partir da forma de onda real do áudio -->
+          <div class="bar played" style="height:20%"></div>
+          <div class="bar played" style="height:55%"></div>
+          <div class="bar played" style="height:35%"></div>
+          <div class="bar played" style="height:70%"></div>
+          <div class="bar" style="height:25%"></div>
+          <div class="bar" style="height:45%"></div>
+          <div class="bar" style="height:30%"></div>
+          <div class="bar" style="height:60%"></div>
+          <div class="bar" style="height:20%"></div>
+          <div class="bar" style="height:50%"></div>
+        </div>
+        <div class="time-row">
+          <span id="player-time-current">1:12</span>
+          <span id="player-time-total">3:00</span>
+        </div>
+
+        <div class="controls">
+          <span class="side" onclick="onSkip(-1)">‹‹</span>
+          <button class="play-btn" id="play-pause-btn" onclick="onTogglePlay()">❚❚</button>
+          <span class="side" onclick="onSkip(1)">››</span>
+        </div>
       </div>
 
-      <div class="controls">
-        <span class="side" onclick="onSkip(-1)">‹‹</span>
-        <button class="play-btn" id="play-pause-btn" onclick="onTogglePlay()">❚❚</button>
-        <span class="side" onclick="onSkip(1)">››</span>
-      </div>
-
-      <div class="lyric-toggle" onclick="onToggleLyrics()">
-        <span>Letra do ponto</span><span id="lyric-chevron">⌄</span>
+      <div class="lyric-toggle" id="lyric-toggle-row" onclick="onToggleLyrics()">
+        <span id="lyric-toggle-label">Letra do ponto</span><span id="lyric-chevron">⌄</span>
       </div>
       <div class="letra-box" id="letra-box"></div>
 
@@ -545,10 +547,10 @@
     }
     container.innerHTML = items.map(item => `
       <div class="list-item" onclick="onOpenTrack('${item.id}')">
-        <div class="dot">${item.tipo === "ponto" ? "▶" : "≡"}</div>
+        <div class="dot">${dotConteudo(item)}</div>
         <div class="meta">
           <p class="title">${escapeHtml(item.titulo)}</p>
-          <p class="sub">${item.tipo === "ponto" ? formatDuracao(item.duracao_segundos) + " · áudio" : "Leitura"}</p>
+          <p class="sub">${subConteudo(item)}</p>
         </div>
         <span class="chev">›</span>
       </div>
@@ -587,15 +589,15 @@
       html += conteudos.length
         ? conteudos.map(item => `
             <div class="list-item" onclick="onOpenTrack('${item.id}')">
-              <div class="dot">${item.tipo === "ponto" ? "▶" : "≡"}</div>
+              <div class="dot">${dotConteudo(item)}</div>
               <div class="meta">
                 <p class="title">${escapeHtml(item.titulo)}</p>
-                <p class="sub">${item.tipo === "ponto" ? formatDuracao(item.duracao_segundos) + " · áudio" : "Leitura"}</p>
+                <p class="sub">${subConteudo(item)}</p>
               </div>
               <span class="chev">›</span>
             </div>
           `).join("")
-        : '<p class="empty-note">Ainda sem pontos ou orações cadastrados pra esse guia.</p>';
+        : '<p class="empty-note">Ainda sem pontos, orações ou contos cadastrados pra esse guia.</p>';
       container.innerHTML = html;
       return;
     }
@@ -621,7 +623,7 @@
             const guia = appState.guias.find(g => g.id === item.guia_id);
             return `
               <div class="list-item" onclick="onOpenTrack('${item.id}')">
-                <div class="dot">▶</div>
+                <div class="dot">${dotConteudo(item)}</div>
                 <div class="meta">
                   <p class="title">${escapeHtml(item.titulo)}</p>
                   <p class="sub">${guia ? escapeHtml(guia.nome) + " · " : ""}${formatDuracao(item.duracao_segundos)}</p>
@@ -715,28 +717,44 @@
       ? "Voz: " + item.voz
       : (guia ? guia.nome : "");
 
+    const art = document.getElementById("player-art");
+    if (item.imagem_url) {
+      art.style.background = `url('${item.imagem_url}') center/cover`;
+      art.innerHTML = "";
+    } else {
+      art.style.background = "";
+      art.innerHTML = '<div class="ring"></div>';
+    }
+
     const audio = document.getElementById("audio-player");
     const playBtn = document.getElementById("play-pause-btn");
     audio.pause();
     audio.currentTime = 0;
 
+    const audioSection = document.getElementById("player-audio-section");
     if (item.audio_url) {
       audio.src = item.audio_url;
       playBtn.disabled = false;
       playBtn.style.opacity = 1;
+      audioSection.style.display = "";
     } else {
       audio.removeAttribute("src");
       playBtn.disabled = true;
       playBtn.style.opacity = 0.4;
+      audioSection.style.display = "none";
     }
 
     document.getElementById("player-time-total").textContent = formatDuracao(item.duracao_segundos);
     document.getElementById("player-time-current").textContent = "0:00";
     updateWaveformProgress(0);
 
-    document.getElementById("letra-box").textContent = item.letra || "Letra ainda não cadastrada.";
-    document.getElementById("letra-box").classList.remove("open");
-    document.getElementById("lyric-chevron").textContent = "⌄";
+    document.getElementById("lyric-toggle-label").textContent =
+      item.tipo === "ponto" ? "Letra do ponto" : item.tipo === "conto" ? "Ler o conto" : "Ler a oração";
+    const letraBox = document.getElementById("letra-box");
+    letraBox.textContent = item.letra || "Texto ainda não cadastrado.";
+    // Sem áudio, o texto é o próprio conteúdo — já abre expandido
+    letraBox.classList.toggle("open", !item.audio_url);
+    document.getElementById("lyric-chevron").textContent = item.audio_url ? "⌄" : "⌃";
 
     appState.isPlaying = false;
     playBtn.textContent = "▶";
@@ -840,6 +858,20 @@
     const m = Math.floor(segundos / 60);
     const s = Math.floor(segundos % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
+  }
+
+  function iconeConteudo(tipo) {
+    return tipo === "ponto" ? "▶" : tipo === "conto" ? "📖" : "≡";
+  }
+  function dotConteudo(item) {
+    return item.imagem_url
+      ? `<img src="${item.imagem_url}" style="width:100%; height:100%; object-fit:cover;">`
+      : iconeConteudo(item.tipo);
+  }
+  function subConteudo(item) {
+    if (item.tipo === "ponto") return formatDuracao(item.duracao_segundos) + " · áudio";
+    if (item.tipo === "conto") return "Conto/história";
+    return "Leitura";
   }
 
   function escapeHtml(str) {
