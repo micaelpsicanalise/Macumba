@@ -165,14 +165,16 @@
               <select id="conteudo-tipo">
                 <option value="ponto">Ponto cantado</option>
                 <option value="oracao">Oração</option>
-                <option value="conto">Conto / História</option>
+                <option value="conto">Itã (conto / história)</option>
               </select>
             </div>
           </div>
+          <label>Odu relacionado (opcional — só faz sentido pra um Itã)</label>
+          <select id="conteudo-odu"><option value="">— nenhum —</option></select>
           <label>Título</label>
           <input type="text" id="conteudo-titulo" placeholder="Saudação a Ogum">
           <label>Letra / Texto</label>
-          <textarea id="conteudo-letra" placeholder="Letra do ponto, texto da oração, ou o conto/história completo"></textarea>
+          <textarea id="conteudo-letra" placeholder="Letra do ponto, texto da oração, ou o Itã completo"></textarea>
           <label>Voz (crédito, opcional)</label>
           <input type="text" id="conteudo-voz" placeholder="Marcos e Ana">
 
@@ -528,6 +530,7 @@
     document.getElementById("conteudo-id").value = c.id;
     document.getElementById("conteudo-guia").value = c.guia_id;
     document.getElementById("conteudo-tipo").value = c.tipo;
+    document.getElementById("conteudo-odu").value = c.odu_id || "";
     document.getElementById("conteudo-titulo").value = c.titulo || "";
     document.getElementById("conteudo-letra").value = c.letra || "";
     document.getElementById("conteudo-voz").value = c.voz || "";
@@ -554,6 +557,7 @@
 
   function resetConteudoForm() {
     document.getElementById("conteudo-id").value = "";
+    document.getElementById("conteudo-odu").value = "";
     document.getElementById("conteudo-titulo").value = "";
     document.getElementById("conteudo-letra").value = "";
     document.getElementById("conteudo-voz").value = "";
@@ -649,6 +653,7 @@
       const payload = {
         guia_id: document.getElementById("conteudo-guia").value,
         tipo: document.getElementById("conteudo-tipo").value,
+        odu_id: document.getElementById("conteudo-odu").value || null,
         titulo: document.getElementById("conteudo-titulo").value.trim(),
         letra: document.getElementById("conteudo-letra").value.trim() || null,
         voz: document.getElementById("conteudo-voz").value.trim() || null,
@@ -685,6 +690,17 @@
     if (error) { console.error(error); return; }
     odusCache = data || [];
     renderOdusTable();
+    preencherSelectOduConteudo();
+  }
+
+  function preencherSelectOduConteudo() {
+    const select = document.getElementById("conteudo-odu");
+    if (!select) return;
+    const atual = select.value;
+    select.innerHTML = `<option value="">— nenhum —</option>` + odusCache.map(o =>
+      `<option value="${o.id}">${o.sistema} búzios · ${o.abertos} abertos — ${escapeHtml(o.nome)}</option>`
+    ).join("");
+    select.value = atual;
   }
 
   function renderOdusTable() {
