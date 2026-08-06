@@ -292,6 +292,10 @@
         <div class="icon-btn" onclick="onOpenSearch()">⌕</div>
       </div>
 
+      <div class="filters" id="tradicao-filters" style="margin-bottom:8px;">
+        <!-- setBibliotecaTradicao() troca a tradição ativa e re-renderiza tudo -->
+      </div>
+
       <div class="filters" id="biblioteca-filters">
         <!-- setBibliotecaCategoria() re-renderiza #biblioteca-list a partir de appState.guias/conteudos -->
         <div class="filter active" data-cat="orixas" onclick="setBibliotecaCategoria('orixas', this)">Orixás</div>
@@ -420,14 +424,29 @@
     user: null,               // sessão do Supabase Auth
     guias: [],                // todos os guias, carregados uma vez
     conteudos: [],             // todos os conteúdos, carregados uma vez
-    bibliotecaCategoria: "orixas", // orixas | entidades | pontos | riscados
+    bibliotecaTradicao: "umbanda", // tradição ativa — ajustada pra primeira que existir, ao carregar
+    bibliotecaCategoria: "orixas", // orixas | entidades | pontos | riscados | itans
     bibliotecaGuiaAberto: null, // slug do guia em detalhe, ou null pra lista geral
     bibliotecaRiscadoAberto: null, // slug do guia com o ponto riscado em detalhe
     isPlaying: false,
     currentTrackId: null,
   };
 
-  const CATEGORIA_LABEL = { orixa: "orixás", preto_velho: "pretos-velhos", caboclo: "caboclos" };
+  // Rótulos amigáveis por tradição — cai num padrão genérico quando a
+  // tradição não está na lista (assim novas tradições já funcionam
+  // sem precisar mexer no código, só ficam com nome genérico até
+  // alguém vir aqui e dar um nome mais preciso).
+  const TRADICAO_NOME = { umbanda: "Umbanda", candomble: "Candomblé", vodum: "Vodum", santeria: "Santería" };
+  const TRADICAO_LABELS = {
+    umbanda: { principal: "Orixás", auxiliar: "Entidades" },
+    candomble: { principal: "Orixás", auxiliar: "Entidades" },
+    vodum: { principal: "Lwa", auxiliar: "Outras entidades" },
+    santeria: { principal: "Orishas", auxiliar: "Otras entidades" },
+  };
+  function labelGrupo(tradicao, grupo) {
+    const labels = TRADICAO_LABELS[tradicao] || { principal: "Guias principais", auxiliar: "Outras entidades" };
+    return labels[grupo] || labels.principal;
+  }
 
   /* ==========================================================
      NAVEGAÇÃO ENTRE TELAS
@@ -484,6 +503,8 @@
 
   async function onAuthReady() {
     await Promise.all([loadCatalogo(), loadHomeData(), loadPerfilData()]);
+    renderTradicaoChips();
+    atualizarLabelsAbas();
     renderBibliotecaList();
     showView("home");
   }
@@ -566,6 +587,34 @@
   /* ==========================================================
      BIBLIOTECA
      ========================================================== */
+  function setBibliotecaTradicao(tradicao) {
+    appState.bibliotecaTradicao = tradicao;
+    appState.bibliotecaGuiaAberto = null;
+    appState.bibliotecaRiscadoAberto = null;
+    renderTradicaoChips();
+    atualizarLabelsAbas();
+    renderBibliotecaList();
+  }
+
+  function renderTradicaoChips() {
+    const container = document.getElementById("tradicao-filters");
+    const tradicoes = [...new Set(appState.guias.map(g => g.tradicao || "umbanda"))].sort();
+    if (!tradicoes.includes(appState.bibliotecaTradicao)) {
+      appState.bibliotecaTradicao = tradicoes[0] || "umbanda";
+    }
+    container.innerHTML = tradicoes.map(t => `
+      <div class="filter ${t === appState.bibliotecaTradicao ? "active" : ""}" onclick="setBibliotecaTradicao('${t}')">
+        ${escapeHtml(TRADICAO_NOME[t] || (t.charAt(0).toUpperCase() + t.slice(1)))}
+      </div>
+    `).join("");
+  }
+
+  function atualizarLabelsAbas() {
+    const t = appState.bibliotecaTradicao;
+    document.querySelector('#biblioteca-filters .filter[data-cat="orixas"]').textContent = labelGrupo(t, "principal");
+    document.querySelector('#biblioteca-filters .filter[data-cat="entidades"]').textContent = labelGrupo(t, "auxiliar");
+  }
+
   function setBibliotecaCategoria(cat, el) {
     document.querySelectorAll("#biblioteca-filters .filter").forEach(f => f.classList.remove("active"));
     el.classList.add("active");
@@ -579,8 +628,14 @@
     return appState.conteudos.filter(c => c.guia_id === guiaId && c.tipo === tipo).length;
   }
 
+  // Guias da tradição ativa — usado como base por todos os modos da Biblioteca
+  function guiasDaTradicao() {
+    return appState.guias.filter(g => (g.tradicao || "umbanda") === appState.bibliotecaTradicao);
+  }
+
   function renderBibliotecaList() {
     const container = document.getElementById("biblioteca-list");
+    const idsDaTradicao = new Set(guiasDaTradicao().map(g => g.id));
 
     // Modo "detalhe de um guia": mostra os conteúdos dele, com botão de voltar embutido na lista
     if (appState.bibliotecaGuiaAberto) {
@@ -616,9 +671,9 @@
       return;
     }
 
-    // Modo "Itans": lista plana de todos os contos/histórias, de qualquer guia
+    // Modo "Itans": lista plana de todos os contos/histórias, da tradição ativa
     if (appState.bibliotecaCategoria === "itans") {
-      const itans = appState.conteudos.filter(c => c.tipo === "conto");
+      const itans = appState.conteudos.filter(c => c.tipo === "conto" && idsDaTradicao.has(c.guia_id));
       container.innerHTML = itans.length
         ? itans.map(item => {
             const guia = appState.guias.find(g => g.id === item.guia_id);
@@ -633,13 +688,13 @@
               </div>
             `;
           }).join("")
-        : '<p class="empty-note">Nenhum Itã publicado ainda.</p>';
+        : '<p class="empty-note">Nenhum Itã publicado ainda nessa tradição.</p>';
       return;
     }
 
-    // Modo "Pontos Cantados": lista plana de todos os conteúdos tipo ponto, de qualquer guia
+    // Modo "Pontos Cantados": lista plana de todos os conteúdos tipo ponto, da tradição ativa
     if (appState.bibliotecaCategoria === "pontos") {
-      const pontos = appState.conteudos.filter(c => c.tipo === "ponto");
+      const pontos = appState.conteudos.filter(c => c.tipo === "ponto" && idsDaTradicao.has(c.guia_id));
       container.innerHTML = pontos.length
         ? pontos.map(item => {
             const guia = appState.guias.find(g => g.id === item.guia_id);
@@ -654,13 +709,13 @@
               </div>
             `;
           }).join("")
-        : '<p class="empty-note">Nenhum ponto cantado publicado ainda.</p>';
+        : '<p class="empty-note">Nenhum ponto cantado publicado ainda nessa tradição.</p>';
       return;
     }
 
-    // Modo "Pontos Riscados": lista plana dos guias que já têm imagem cadastrada
+    // Modo "Pontos Riscados": lista plana dos guias da tradição ativa que já têm imagem cadastrada
     if (appState.bibliotecaCategoria === "riscados") {
-      const riscados = appState.guias.filter(g => g.ponto_riscado_url);
+      const riscados = guiasDaTradicao().filter(g => g.ponto_riscado_url);
       container.innerHTML = riscados.length
         ? riscados.map(guia => `
             <div class="list-item" onclick="onOpenRiscado('${guia.slug}')">
@@ -669,15 +724,13 @@
               <span class="chev">›</span>
             </div>
           `).join("")
-        : '<p class="empty-note">Nenhum ponto riscado cadastrado ainda.</p>';
+        : '<p class="empty-note">Nenhum ponto riscado cadastrado ainda nessa tradição.</p>';
       return;
     }
 
-    // Modo "Orixás" / "Entidades": lista de guias daquela categoria
-    const categoriasDaAba = appState.bibliotecaCategoria === "orixas"
-      ? ["orixa"]
-      : ["preto_velho", "caboclo"];
-    const lista = appState.guias.filter(g => categoriasDaAba.includes(g.categoria));
+    // Modo "Principais" / "Auxiliares" (Orixás/Entidades, Lwa/Outras, Orishas/Otras...): guias por grupo, dentro da tradição ativa
+    const grupoDaAba = appState.bibliotecaCategoria === "orixas" ? "principal" : "auxiliar";
+    const lista = guiasDaTradicao().filter(g => (g.grupo || "principal") === grupoDaAba);
 
     container.innerHTML = lista.length
       ? lista.map(guia => `
@@ -685,12 +738,12 @@
             <div class="dot">${guia.nome.charAt(0)}</div>
             <div class="meta">
               <p class="title">${escapeHtml(guia.nome)}</p>
-              <p class="sub">${contarConteudos(guia.id, "ponto")} pontos · ${contarConteudos(guia.id, "oracao")} orações</p>
+              <p class="sub">${guia.categoria ? escapeHtml(guia.categoria) + " · " : ""}${contarConteudos(guia.id, "ponto")} pontos · ${contarConteudos(guia.id, "oracao")} orações</p>
             </div>
             <span class="chev">›</span>
           </div>
         `).join("")
-      : '<p class="empty-note">Nenhum guia nessa categoria ainda.</p>';
+      : '<p class="empty-note">Nenhum guia nesse grupo ainda.</p>';
   }
 
   function onOpenGuia(slug) {
