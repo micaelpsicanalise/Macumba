@@ -223,6 +223,7 @@ p{ margin:0; }
       <div class="top-row">
         <span class="greeting">Jogo de Búzios</span>
         <div style="display:flex; gap:8px;">
+          <div class="icon-btn" onclick="showView('itans')" title="Itans">📖</div>
           <div class="icon-btn" onclick="showView('sobre')" title="Sobre o jogo">?</div>
           <div class="icon-btn" onclick="showView('historico')" title="Histórico">≡</div>
         </div>
@@ -264,6 +265,7 @@ p{ margin:0; }
         <button class="tab" onclick="showView('lancar')"><span class="glyph"></span>Lançar</button>
         <button class="tab active" onclick="showView('historico')"><span class="glyph"></span>Histórico</button>
         <button class="tab" onclick="showView('sobre')"><span class="glyph"></span>Sobre</button>
+        <button class="tab" onclick="showView('itans')"><span class="glyph"></span>Itans</button>
       </div>
     </section>
 
@@ -315,6 +317,23 @@ p{ margin:0; }
         <button class="tab" onclick="showView('lancar')"><span class="glyph"></span>Lançar</button>
         <button class="tab" onclick="showView('historico')"><span class="glyph"></span>Histórico</button>
         <button class="tab active" onclick="showView('sobre')"><span class="glyph"></span>Sobre</button>
+        <button class="tab" onclick="showView('itans')"><span class="glyph"></span>Itans</button>
+      </div>
+    </section>
+
+    <!-- ================= ITANS ================= -->
+    <section id="view-itans" class="view">
+      <div class="top-row">
+        <h3 id="itans-titulo">Itans</h3>
+        <div class="icon-btn" onclick="onVoltarItans()">‹</div>
+      </div>
+      <div class="scroll" id="itans-content"></div>
+
+      <div class="tabbar">
+        <button class="tab" onclick="showView('lancar')"><span class="glyph"></span>Lançar</button>
+        <button class="tab" onclick="showView('historico')"><span class="glyph"></span>Histórico</button>
+        <button class="tab" onclick="showView('sobre')"><span class="glyph"></span>Sobre</button>
+        <button class="tab active" onclick="showView('itans')"><span class="glyph"></span>Itans</button>
       </div>
     </section>
 
@@ -344,6 +363,9 @@ const appState = {
   compostos: { 16: {}, 18: {} },  // buzios_odus_compostos, indexado por [sistema]["pai-mae"]
   jogadaAtual: 0,                 // 0 = ainda não jogou, 1 = jogou a primeira (pai), 2 = concluído
   odusJogada: [null, null],       // [odu pai, odu mae] da consulta em andamento
+  itans: [],                      // conteudos tipo=conto vinculados a um odu_id
+  itansPorOdu: {},                // odu_id -> [itans]
+  itansModo: "lista",             // "lista" ou "detalhe"
 };
 
 /* ==========================================================
@@ -352,12 +374,16 @@ const appState = {
 async function carregarLeituras() {
   if (!supabaseClient) return;
   try {
-    const [{ data: odus, error: errOdus }, { data: compostos, error: errCompostos }] = await Promise.all([
+    const [{ data: odus, error: errOdus }, { data: compostos, error: errCompostos }, { data: itans, error: errItans }, { data: guias, error: errGuias }] = await Promise.all([
       supabaseClient.from("buzios_odus").select("*").eq("ativo", true),
       supabaseClient.from("buzios_odus_compostos").select("*").eq("ativo", true),
+      supabaseClient.from("conteudos").select("*").eq("tipo", "conto").eq("ativo", true),
+      supabaseClient.from("guias").select("id, nome"),
     ]);
     if (errOdus) throw errOdus;
     if (errCompostos) throw errCompostos;
+    if (errItans) throw errItans;
+    if (errGuias) throw errGuias;
 
     const odusPorSistema = { 16: {}, 18: {} };
     (odus || []).forEach(o => { odusPorSistema[o.sistema][o.abertos] = o; });
@@ -368,6 +394,19 @@ async function carregarLeituras() {
       compostosPorSistema[c.sistema][`${c.abertos_pai}-${c.abertos_mae}`] = c;
     });
     appState.compostos = compostosPorSistema;
+
+    const guiasPorId = {};
+    (guias || []).forEach(g => { guiasPorId[g.id] = g; });
+    appState.itans = (itans || []).map(item => ({
+      ...item,
+      guiaNome: item.guia_id && guiasPorId[item.guia_id] ? guiasPorId[item.guia_id].nome : null,
+    }));
+    const itansPorOdu = {};
+    appState.itans.forEach(item => {
+      if (!item.odu_id) return;
+      (itansPorOdu[item.odu_id] = itansPorOdu[item.odu_id] || []).push(item);
+    });
+    appState.itansPorOdu = itansPorOdu;
   } catch (e) {
     console.warn("Não foi possível carregar as leituras do Supabase:", e);
   }
@@ -459,6 +498,7 @@ function showView(name) {
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   document.getElementById("view-" + name).classList.add("active");
   if (name === "historico") renderHistorico();
+  if (name === "itans") { appState.itansModo = "lista"; renderItansLista(); }
 }
 
 function setSistema(el, valor) {
@@ -599,7 +639,7 @@ function concluirConsulta(sistema, abertosPai, abertosMae) {
   const oduMae = getOdu(sistema, abertosMae);
   const leitura = getLeituraComposta(sistema, oduPai, oduMae, abertosPai, abertosMae);
 
-  mostrarResultado(leitura, sistema, abertosPai, abertosMae);
+  mostrarResultado(leitura, sistema, abertosPai, abertosMae, oduPai, oduMae);
 
   appState.historico.unshift({
     data: new Date().toISOString(),
@@ -631,12 +671,17 @@ function mostrarExcecao(abertos, qualJogada) {
   salvarHistorico();
 }
 
-function mostrarResultado(leitura, sistema, abertosPai, abertosMae) {
+function mostrarResultado(leitura, sistema, abertosPai, abertosMae, oduPai, oduMae) {
   const area = document.getElementById("resultado-area");
   const partesHtml = leitura.partes.map(parte => `
     ${parte.label ? `<p class="parte-label">${parte.label}</p>` : ""}
     <p class="texto">${parte.texto}</p>
   `).join("");
+
+  const itansBtns = [oduPai, oduMae]
+    .filter(o => o && o.id && appState.itansPorOdu[o.id] && appState.itansPorOdu[o.id].length)
+    .map(o => `<button class="clear-btn" style="width:100%; margin-top:8px;" onclick="abrirItanDoOdu('${o.id}')">📖 Ler o Itã de ${o.nome}</button>`)
+    .join("");
 
   area.innerHTML = `
     <div class="stat-row">
@@ -648,8 +693,60 @@ function mostrarResultado(leitura, sistema, abertosPai, abertosMae) {
       <h3>${leitura.titulo}</h3>
       ${partesHtml}
       ${leitura.generico ? '<p class="edit-note">Leitura ainda incompleta — cadastre os Odus dessa jogada no painel admin, aba Búzios.</p>' : ''}
+      ${itansBtns}
     </div>
   `;
+}
+
+/* ==========================================================
+   ITANS
+   ========================================================== */
+function renderItansLista() {
+  document.getElementById("itans-titulo").textContent = "Itans";
+  const content = document.getElementById("itans-content");
+  if (!appState.itans.length) {
+    content.innerHTML = '<div class="empty-state">Nenhum Itã publicado ainda.<br>Cadastre um conto vinculado a um Odu no admin.</div>';
+    return;
+  }
+  content.innerHTML = appState.itans.map(item => `
+    <div class="list-item" onclick="mostrarItanDetalhe('${item.id}')">
+      <div class="dot">📖</div>
+      <div class="meta">
+        <p class="title">${item.titulo}</p>
+        <p class="sub">${item.guiaNome || "Itã"}</p>
+      </div>
+      <span class="chev">›</span>
+    </div>
+  `).join("");
+}
+
+function mostrarItanDetalhe(id) {
+  const item = appState.itans.find(i => i.id === id);
+  if (!item) return;
+  appState.itansModo = "detalhe";
+  document.getElementById("itans-titulo").textContent = item.titulo;
+  document.getElementById("itans-content").innerHTML = `
+    <div class="oracle-card">
+      ${item.guiaNome ? `<p class="eyebrow">${item.guiaNome}</p>` : ""}
+      <p class="texto">${(item.letra || "Texto ainda não cadastrado.").replace(/\n/g, "<br>")}</p>
+    </div>
+  `;
+  showView("itans");
+}
+
+function abrirItanDoOdu(oduId) {
+  const lista = appState.itansPorOdu[oduId];
+  if (!lista || !lista.length) return;
+  mostrarItanDetalhe(lista[0].id);
+}
+
+function onVoltarItans() {
+  if (appState.itansModo === "detalhe") {
+    appState.itansModo = "lista";
+    renderItansLista();
+  } else {
+    showView("lancar");
+  }
 }
 
 /* ==========================================================
