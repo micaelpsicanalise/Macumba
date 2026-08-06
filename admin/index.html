@@ -164,20 +164,27 @@
               <select id="conteudo-tipo">
                 <option value="ponto">Ponto cantado</option>
                 <option value="oracao">Oração</option>
+                <option value="conto">Conto / História</option>
               </select>
             </div>
           </div>
           <label>Título</label>
           <input type="text" id="conteudo-titulo" placeholder="Saudação a Ogum">
-          <label>Letra</label>
-          <textarea id="conteudo-letra" placeholder="Texto completo, mostrado no toggle 'Letra do ponto'"></textarea>
+          <label>Letra / Texto</label>
+          <textarea id="conteudo-letra" placeholder="Letra do ponto, texto da oração, ou o conto/história completo"></textarea>
           <label>Voz (crédito, opcional)</label>
           <input type="text" id="conteudo-voz" placeholder="Marcos e Ana">
 
-          <label>Áudio (mp3) — deixe em branco pra manter o atual, se estiver editando</label>
+          <label>Áudio (mp3) — deixe em branco pra manter o atual, se estiver editando. Não obrigatório pra contos/histórias.</label>
           <input type="file" id="conteudo-arquivo" accept="audio/*">
           <p id="upload-status"></p>
           <audio id="conteudo-preview" controls style="display:none; margin-top:8px; width:100%;"></audio>
+
+          <label>Imagem (opcional) — capa do conto, retrato da entidade, etc.</label>
+          <input type="hidden" id="conteudo-imagem-url">
+          <input type="file" id="conteudo-imagem-arquivo" accept="image/*">
+          <p id="conteudo-imagem-status" class="muted" style="margin-top:6px;"></p>
+          <img id="conteudo-imagem-preview" style="display:none; width:160px; height:120px; object-fit:cover; border-radius:12px; margin-top:8px;">
 
           <div class="row" style="margin-top:12px;">
             <div>
@@ -199,7 +206,7 @@
         <div class="card">
           <h2>Conteúdos cadastrados</h2>
           <table>
-            <thead><tr><th>Guia</th><th>Título</th><th>Tipo</th><th>Áudio</th><th></th></tr></thead>
+            <thead><tr><th>Guia</th><th>Título</th><th>Tipo</th><th>Imagem</th><th>Áudio</th><th></th></tr></thead>
             <tbody id="conteudos-table"></tbody>
           </table>
         </div>
@@ -225,6 +232,7 @@
   let guiasCache = [];
   let conteudosCache = [];
   let pendingAudioFile = null;
+  let pendingImagemFile = null;
   let pendingRiscadoFile = null;
 
   /* ---------------- AUTH ---------------- */
@@ -396,11 +404,12 @@
           <td>${guia ? escapeHtml(guia.nome) : "—"}</td>
           <td>${escapeHtml(c.titulo)}</td>
           <td>${c.tipo}</td>
+          <td>${c.imagem_url ? `<img src="${c.imagem_url}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : "—"}</td>
           <td>${c.audio_url ? `<audio controls src="${c.audio_url}"></audio>` : `<span class="muted">sem áudio</span>`}</td>
           <td><button class="btn btn-sm" onclick="editConteudo('${c.id}')">Editar</button></td>
         </tr>
       `;
-    }).join("") || `<tr><td colspan="5" class="muted">Nenhum conteúdo ainda.</td></tr>`;
+    }).join("") || `<tr><td colspan="6" class="muted">Nenhum conteúdo ainda.</td></tr>`;
   }
 
   function editConteudo(id) {
@@ -421,6 +430,13 @@
     const preview = document.getElementById("conteudo-preview");
     if (c.audio_url) { preview.src = c.audio_url; preview.style.display = "block"; }
     else { preview.style.display = "none"; }
+    document.getElementById("conteudo-imagem-url").value = c.imagem_url || "";
+    document.getElementById("conteudo-imagem-arquivo").value = "";
+    document.getElementById("conteudo-imagem-status").textContent = "";
+    pendingImagemFile = null;
+    const imagemPreview = document.getElementById("conteudo-imagem-preview");
+    if (c.imagem_url) { imagemPreview.src = c.imagem_url; imagemPreview.style.display = "block"; }
+    else { imagemPreview.style.display = "none"; }
     document.getElementById("upload-status").textContent = "";
     document.getElementById("conteudo-form-title").textContent = "Editar conteúdo";
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -439,6 +455,11 @@
     document.getElementById("conteudo-preview").style.display = "none";
     document.getElementById("upload-status").textContent = "";
     pendingAudioFile = null;
+    document.getElementById("conteudo-imagem-url").value = "";
+    document.getElementById("conteudo-imagem-arquivo").value = "";
+    document.getElementById("conteudo-imagem-status").textContent = "";
+    document.getElementById("conteudo-imagem-preview").style.display = "none";
+    pendingImagemFile = null;
     document.getElementById("conteudo-form-title").textContent = "Novo conteúdo";
   }
 
@@ -451,6 +472,16 @@
     preview.style.display = "block";
     document.getElementById("upload-status").textContent = `Selecionado: ${file.name} — será enviado ao salvar.`;
     document.getElementById("upload-status").classList.remove("error");
+  });
+
+  document.getElementById("conteudo-imagem-arquivo").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    pendingImagemFile = file;
+    const preview = document.getElementById("conteudo-imagem-preview");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+    document.getElementById("conteudo-imagem-status").textContent = `Selecionado: ${file.name} — será enviado ao salvar.`;
   });
 
   function getAudioDuration(file) {
@@ -488,6 +519,7 @@
     let audioUrl = document.getElementById("conteudo-audio-url").value || null;
     let duracao = document.getElementById("conteudo-duracao").value
       ? parseInt(document.getElementById("conteudo-duracao").value) : null;
+    let imagemUrl = document.getElementById("conteudo-imagem-url").value || null;
 
     try {
       if (pendingAudioFile) {
@@ -497,6 +529,11 @@
         duracao = await getAudioDuration(pendingAudioFile);
         audioUrl = await uploadAudio(pendingAudioFile);
         statusEl.textContent = "Áudio enviado.";
+      }
+      if (pendingImagemFile) {
+        document.getElementById("conteudo-imagem-status").textContent = "Enviando imagem...";
+        imagemUrl = await uploadAudio(pendingImagemFile);
+        document.getElementById("conteudo-imagem-status").textContent = "Imagem enviada.";
       }
 
       const payload = {
@@ -509,6 +546,7 @@
         ativo: document.getElementById("conteudo-ativo").checked,
         audio_url: audioUrl,
         duracao_segundos: duracao,
+        imagem_url: imagemUrl,
       };
       if (!payload.titulo || !payload.guia_id) {
         alert("Guia e título são obrigatórios.");
