@@ -1,4 +1,4 @@
-# Handoff — Jogo de Búzios (Terreiro Digital / Umbanda)
+# Handoff Jogo de Búzios (Terreiro Digital / Umbanda)
 
 Contexto pra quem está entrando no meio: o Micael pediu um jogo de búzios pra
 colocar no repo `micaelpsicanalise/Umbanda`. Este documento resume o que foi
