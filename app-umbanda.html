@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terreiro Digital — protótipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg: #F6F2E9;
+--ink: #1E2A20;
+--ink-soft: #4B5A4E;
+--green: #2F4A34;
+--green-dark: #1B2E20;
+--gold: #B98A2C;
+--gold-soft: #E9DCB9;
+--line: rgba(30,42,32,0.14);
+--card: #FFFFFF;
+--radius: 18px;
+}
+*{box-sizing:border-box;}
+body{
+margin:0;
+background: var(--bg);
+font-family:'Inter', sans-serif;
+color: var(--ink);
+display:flex;
+justify-content:center;
+padding:32px 16px;
+}
+.device{
+width:380px;
+background: var(--green-dark);
+border-radius:36px;
+padding:14px;
+box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+}
+.screen{
+background: var(--bg);
+border-radius:24px;
+min-height:720px;
+overflow:hidden;
+position:relative;
+display:flex;
+flex-direction:column;
+}
+.status-dot{
+width:36px; height:4px; background:var(--ink); opacity:0.15;
+border-radius:2px; margin:10px auto 0;
+}
+.view{ display:none; flex:1; flex-direction:column; padding:20px 20px 0; }
+.view.active{ display:flex; }
+h1,h2,h3{ font-family:'Fraunces', serif; font-weight:500; margin:0; color:var(--ink); }
+p{ margin:0; }
+.eyebrow{
+font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+color: var(--ink-soft); font-weight:500;
+}
+.top-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+.greeting{ font-size:15px; font-family:'Fraunces', serif; }
+.icon-btn{
+width:34px; height:34px; border-radius:50%; background:var(--card);
+border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+color:var(--ink-soft); font-size:15px; cursor:pointer;
+}
+.guia-card{
+background: var(--green); color:#fff; border-radius: var(--radius);
+padding:20px; margin-bottom:14px; position:relative; overflow:hidden;
+}
+.guia-card .eyebrow{ color: var(--gold-soft); }
+.guia-card h2{ color:#fff; font-size:24px; margin-top:6px; }
+.guia-card .sub{ font-size:12px; color:#D9E2DA; margin-top:4px; }
+.ring{
+position:absolute; right:-30px; top:-30px; width:120px; height:120px;
+border-radius:50%; border:1px solid rgba(255,255,255,0.18);
+}
+.ring.small{ right:-10px; top:-10px; width:70px; height:70px; }
+.stat-row{ display:flex; gap:10px; margin-bottom:18px; }
+.stat{
+flex:1; background:var(--card); border:1px solid var(--line);
+border-radius:14px; padding:12px; text-align:center;
+}
+.stat .num{ font-family:'Fraunces', serif; font-size:22px; }
+.stat .label{ font-size:10.5px; color:var(--ink-soft); margin-top:2px; }
+.section-label{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+.list-item{
+display:flex; align-items:center; gap:12px; background:var(--card);
+border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:8px;
+cursor:pointer;
+}
+.list-item .dot{
+width:36px; height:36px; border-radius:50%; background: var(--gold-soft);
+flex-shrink:0; display:flex; align-items:center; justify-content:center;
+color: var(--gold); font-size:14px; font-family:'Fraunces', serif;
+}
+.list-item .meta{ flex:1; }
+.list-item .title{ font-size:13.5px; font-weight:500; }
+.list-item .sub{ font-size:11px; color:var(--ink-soft); margin-top:1px; }
+.list-item .chev{ color:var(--ink-soft); font-size:13px; }
+.tabbar{
+display:flex; justify-content:space-around; align-items:center;
+padding:14px 10px; border-top:1px solid var(--line); margin-top:auto; background:var(--bg);
+}
+.tab{
+background:none; border:none; color:var(--ink-soft); font-size:11px;
+display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;
+font-family:'Inter', sans-serif;
+}
+.tab .glyph{ width:20px; height:20px; border-radius:6px; border:1.5px solid currentColor; }
+.tab.active{ color:var(--green); font-weight:600; }
+.filters{ display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; }
+.filter{
+font-size:11.5px; padding:6px 12px; border-radius:20px; white-space:nowrap;
+border:1px solid var(--line); color:var(--ink-soft); cursor:pointer;
+}
+.filter.active{ background:var(--green); border-color:var(--green); color:#fff; }
+.back-row{ display:flex; align-items:center; gap:6px; margin-bottom:16px; color:var(--ink-soft); font-size:12.5px; cursor:pointer; }
+.art{
+width:140px; height:140px; border-radius:20px; background:var(--green);
+margin:0 auto 16px; position:relative; overflow:hidden;
+}
+.art .ring{ border-color: rgba(255,255,255,0.25); }
+.track-title{ text-align:center; font-size:16px; }
+.track-sub{ text-align:center; font-size:12px; color:var(--ink-soft); margin-top:4px; margin-bottom:22px; }
+.waveform{ display:flex; align-items:flex-end; gap:3px; height:40px; margin-bottom:8px; }
+.bar{ flex:1; background:var(--line); border-radius:2px; }
+.bar.played{ background:var(--gold); }
+.time-row{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--ink-soft); margin-bottom:22px; }
+.controls{ display:flex; justify-content:center; align-items:center; gap:26px; margin-bottom:22px; }
+.controls .side{ color:var(--ink-soft); font-size:18px; cursor:pointer; }
+.play-btn{
+width:52px; height:52px; border-radius:50%; background:var(--green);
+color:#fff; display:flex; align-items:center; justify-content:center;
+font-size:18px; cursor:pointer; border:none;
+}
+.lyric-toggle{
+display:flex; justify-content:space-between; align-items:center;
+border-top:1px solid var(--line); padding:14px 0; font-size:12px; color:var(--ink-soft);
+cursor:pointer;
+}
+.historia-resumo{ font-size:12.5px; color:var(--ink-soft); line-height:1.55; margin-bottom:18px; }
+.historia-tag{
+display:inline-block; font-size:10.5px; color:var(--gold); background:var(--gold-soft);
+padding:3px 9px; border-radius:20px; margin-bottom:14px; font-weight:600;
+}
+.timeline{ position:relative; padding-left:18px; margin-bottom:22px; }
+.timeline::before{
+content:""; position:absolute; left:4px; top:4px; bottom:4px; width:1px; background:var(--line);
+}
+.timeline-item{ position:relative; padding-bottom:16px; }
+.timeline-item::before{
+content:""; position:absolute; left:-18px; top:3px; width:9px; height:9px; border-radius:50%;
+background:var(--green); border:2px solid var(--bg);
+}
+.timeline-year{ font-size:11px; color:var(--gold); font-weight:600; margin-bottom:2px; }
+.timeline-text{ font-size:12.5px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="device">
+<div class="screen">
+<div class="status-dot"></div>
+
+<!-- ================= HOME ================= -->
+<section id="view-home" class="view active">
+<div class="top-row">
+<span class="greeting">Boa tarde, <span id="user-name">Marcos</span></span>
+<div class="icon-btn" onclick="onOpenNotifications()">•</div>
+</div>
+<div class="guia-card">
+<div class="ring"></div>
+<div class="ring small"></div>
+<p class="eyebrow" id="guia-do-dia-label">Guia do dia</p>
+<h2 id="guia-do-dia-nome">Ogum</h2>
+<p class="sub" id="guia-do-dia-info">Terça-feira · linha de guerreiro</p>
+</div>
+<div class="stat-row">
+<div class="stat">
+<p class="num" id="stat-streak">12</p>
+<p class="label">dias seguidos</p>
+</div>
+<div class="stat">
+<p class="num" id="stat-ouvidos">6</p>
+<p class="label">pontos ouvidos</p>
+</div>
+</div>
+<p class="section-label">Sugestão de hoje</p>
+<div id="home-suggestions">
+<!-- TODO: renderHomeSuggestions() preenche esta lista dinamicamente -->
+<div class="list-item" onclick="onOpenTrack('saudacao-ogum')">
+<div class="dot">▶</div>
+<div class="meta">
+<p class="title">Saudação a Ogum</p>
+<p class="sub">3 min · áudio</p>
+</div>
+<span class="chev">›</span>
+</div>
+<div class="list-item" onclick="onOpenTrack('abertura-gira')">
+<div class="dot">≡</div>
+<div class="meta">
+<p class="title">Oração de abertura de gira</p>
+<p class="sub">Leitura</p>
+</div>
+<span class="chev">›</span>
+</div>
+</div>
+<div class="tabbar">
+<button class="tab active" onclick="showView('home')"><span class="glyph"></span>Início</button>
+<button class="tab" onclick="showView('biblioteca')"><span class="glyph"></span>Guias</button>
+<button class="tab" onclick="showView('historia')"><span class="glyph"></span>História</button>
+<button class="tab" onclick="showView('perfil')"><span class="glyph"></span>Perfil</button>
+</div>
+</section>
+
+<!-- ================= BIBLIOTECA ================= -->
+<section id="view-biblioteca" class="view">
+<div class="top-row">
+<h3>Guias e orixás</h3>
+<div class="icon-btn" onclick="onOpenSearch()">⌕</div>
+</div>
+<div class="filters" id="biblioteca-filters">
+<!-- TODO: setActiveFilter(categoria) re-renderiza #biblioteca-list -->
+<div class="filter active" onclick="setActiveFilter(this, 'todos')">Todos</div>
+<div class="filter" onclick="setActiveFilter(this, 'orixas')">Orixás</div>
+<div class="filter" onclick="setActiveFilter(this, 'pretos-velhos')">Pretos-velhos</div>
+<div class="filter" onclick="setActiveFilter(this, 'caboclos')">Caboclos</div>
+</div>
+<div id="biblioteca-list" style="overflow-y:auto;">
+<!-- gerado por renderBibliotecaList() a partir de CATALOGO.guias -->
+</div>
+<div class="tabbar">
+<button class="tab" onclick="showView('home')"><span class="glyph"></span>Início</button>
+<button class="tab active" onclick="showView('biblioteca')"><span class="glyph"></span>Guias</button>
+<button class="tab" onclick="showView('historia')"><span class="glyph"></span>História</button>
+<button class="tab" onclick="showView('perfil')"><span class="glyph"></span>Perfil</button>
+</div>
+</section>
+
+<!-- ================= HISTÓRIA (raízes afro-diaspóricas) ================= -->
+<section id="view-historia" class="view">
+<div class="top-row">
+<h3>Raízes afro-diaspóricas</h3>
+<div class="icon-btn" onclick="onOpenSearch()">⌕</div>
+</div>
+<p class="section-label">Nações e tradições que formam a Umbanda</p>
+<div id="historia-list" style="overflow-y:auto;">
+<!-- gerado por renderHistoriaList() a partir de CATALOGO.culturas -->
+</div>
+<div class="tabbar">
+<button class="tab" onclick="showView('home')"><span class="glyph"></span>Início</button>
+<button class="tab" onclick="showView('biblioteca')"><span class="glyph"></span>Guias</button>
+<button class="tab active" onclick="showView('historia')"><span class="glyph"></span>História</button>
+<button class="tab" onclick="showView('perfil')"><span class="glyph"></span>Perfil</button>
+</div>
+</section>
+
+<!-- ================= DETALHE DE UMA CULTURA ================= -->
+<section id="view-cultura-detalhe" class="view">
+<div class="back-row" onclick="showView('historia')">‹ Voltar</div>
+<p class="historia-tag" id="cultura-regiao">—</p>
+<h3 id="cultura-nome" style="margin-bottom:14px;">—</h3>
+<p class="historia-resumo" id="cultura-resumo">—</p>
+<p class="section-label">Linha do tempo</p>
+<div class="timeline" id="cultura-timeline"></div>
+<p class="section-label">Guias ligados a esta tradição</p>
+<div id="cultura-guias-relacionados" style="overflow-y:auto;"></div>
+</section>
+
+<!-- ================= PLAYER ================= -->
+<section id="view-player" class="view">
+<div class="back-row" onclick="showView('biblioteca')">‹ Voltar</div>
+<div class="art"><div class="ring"></div></div>
+<h3 class="track-title" id="player-title">Ponto cantado de Ogum</h3>
+<p class="track-sub" id="player-sub">Voz: Marcos e Ana</p>
+<div class="waveform" id="player-waveform">
+<!-- TODO: gerar barras a partir da forma de onda real do áudio -->
+<div class="bar played" style="height:20%"></div>
+<div class="bar played" style="height:55%"></div>
+<div class="bar played" style="height:35%"></div>
+<div class="bar played" style="height:70%"></div>
+<div class="bar" style="height:25%"></div>
+<div class="bar" style="height:45%"></div>
+<div class="bar" style="height:30%"></div>
+<div class="bar" style="height:60%"></div>
+<div class="bar" style="height:20%"></div>
+<div class="bar" style="height:50%"></div>
+</div>
+<div class="time-row">
+<span id="player-time-current">1:12</span>
+<span id="player-time-total">3:00</span>
+</div>
+<div class="controls">
+<span class="side" onclick="onSkip(-1)">‹‹</span>
+<button class="play-btn" id="play-pause-btn" onclick="onTogglePlay()">❚❚</button>
+<span class="side" onclick="onSkip(1)">››</span>
+</div>
+<div class="lyric-toggle" onclick="onToggleLyrics()">
+<span>Letra do ponto</span><span>⌄</span>
+</div>
+<!-- Elemento de áudio real, sem src ainda -->
+<audio id="audio-player" preload="none"></audio>
+</section>
+
+</div>
+</div>
+
+<script>
+/* ==========================================================
+   ESTADO — troque por dados vindos do backend (Supabase etc.)
+   ========================================================== */
+const appState = {
+  user: { name: "Marcos", streak: 12, pontosOuvidos: 6 },
+  guiaDoDia: { nome: "Ogum", info: "Terça-feira · linha de guerreiro" },
+  bibliotecaFiltroAtivo: "todos",
+  isPlaying: true,
+  currentTrackId: null,
+  culturaAberta: null,
+};
+
+/* ==========================================================
+   CATÁLOGO — fonte única de dados.
+   TODO backend: estas duas listas (culturas, guias) devem virar
+   duas tabelas no banco (ex: Supabase "culturas" e "guias"), com
+   "origemCulturalId" em guias como foreign key para culturas.id.
+   Isso é o que torna o cadastro no admin eficiente: quem cataloga
+   só adiciona um registro em UMA tabela — o app inteiro (filtros,
+   listagem, telas de detalhe, contadores) é derivado daqui, em vez
+   de precisar editar HTML à mão em vários lugares como antes.
+   ========================================================== */
+const CATALOGO = {
+  culturas: [
+    {
+      id: "iorubaa",
+      nome: "Nagô / Iorubá",
+      regiaoOrigem: "Sudoeste da Nigéria e Benin",
+      periodo: "Trazida ao Brasil sobretudo entre 1750–1850",
+      resumo: "Tradição de matriz iorubá que chegou ao Brasil com pessoas escravizadas da região onde hoje ficam Nigéria e Benin. Trouxe o culto aos orixás — divindades ligadas a forças da natureza e ancestrais — que se tornaram centrais tanto no Candomblé quanto, mais tarde, na Umbanda.",
+      marcos: [
+        { ano: "Séc. XVIII–XIX", texto: "Chegada forçada de povos iorubás ao Brasil durante o tráfico transatlântico." },
+        { ano: "Séc. XIX", texto: "Formação dos primeiros terreiros de Candomblé Queto/Nagô na Bahia." },
+        { ano: "1900–1930", texto: "Elementos do culto aos orixás são incorporados à Umbanda nascente no Rio de Janeiro." }
+      ]
+    },
+    {
+      id: "banto",
+      nome: "Banto (Angola e Congo)",
+      regiaoOrigem: "África Centro-Ocidental (atuais Angola, Congo, RD Congo)",
+      periodo: "Um dos grupos mais numerosos trazidos ao Brasil, do séc. XVI ao XIX",
+      resumo: "Povos de língua banto formaram um dos maiores contingentes da diáspora africana no Brasil. Sua cosmologia, culto aos ancestrais e vocabulário (muitas palavras do português popular vêm do quimbundo e do quicongo) influenciam diretamente o Candomblé de Angola e a figura dos Pretos-velhos na Umbanda.",
+      marcos: [
+        { ano: "Séc. XVI", texto: "Início do tráfico entre os reinos do Congo/Angola e o Brasil colonial." },
+        { ano: "Séc. XVIII", texto: "Formação de comunidades e quilombos com forte presença banto, como o Quilombo dos Palmares." },
+        { ano: "Séc. XX", texto: "A figura do Preto-velho consolida-se na Umbanda como memória dos ancestrais africanos escravizados." }
+      ]
+    },
+    {
+      id: "jeje",
+      nome: "Jeje (povo Fon)",
+      regiaoOrigem: "Antigo Reino do Daomé (atual Benin)",
+      periodo: "Chegada intensificada no séc. XVIII e início do XIX",
+      resumo: "Povos fon do antigo Daomé trouxeram o culto aos voduns, divindades próximas em função aos orixás iorubás. O Jeje formou, junto ao Nagô e ao Banto, uma das três grandes matrizes das religiões afro-brasileiras.",
+      marcos: [
+        { ano: "Séc. XVIII", texto: "Guerras no Daomé aumentam o número de pessoas escravizadas enviadas ao Brasil." },
+        { ano: "Séc. XIX", texto: "Terreiros jeje-nagô se consolidam no Maranhão e na Bahia." }
+      ]
+    },
+    {
+      id: "diaspora-brasileira",
+      nome: "Formação da Umbanda no Brasil",
+      regiaoOrigem: "Rio de Janeiro e Sudeste do Brasil",
+      periodo: "A partir de 1908, consolidada nas décadas de 1920–1930",
+      resumo: "A Umbanda nasce da mistura dessas tradições africanas (iorubá, banto, jeje) com o catolicismo popular, o espiritismo kardecista e elementos indígenas. É uma religião genuinamente brasileira, criada em resposta direta à experiência da diáspora e da escravidão.",
+      marcos: [
+        { ano: "1908", texto: "Zélio de Moraes recebe, no Rio de Janeiro, o que a tradição narra como a primeira gira de Umbanda." },
+        { ano: "1920–1930", texto: "Expansão dos primeiros terreiros e organização das linhas de trabalho (Orixás, Caboclos, Pretos-velhos, Erês)." },
+        { ano: "Hoje", texto: "A Umbanda segue viva como espaço de memória e reafirmação das culturas afro-diaspóricas no Brasil." }
+      ]
+    }
+  ],
+  guias: [
+    { id: "ogum", nome: "Ogum", categoria: "orixas", origemCulturalId: "iorubaa", pontos: 4, oracoes: 2 },
+    { id: "oxum", nome: "Oxum", categoria: "orixas", origemCulturalId: "iorubaa", pontos: 5, oracoes: 3 },
+    { id: "iemanja", nome: "Iemanjá", categoria: "orixas", origemCulturalId: "iorubaa", pontos: 6, oracoes: 2 },
+    { id: "vovo-cambinda", nome: "Vovó Cambinda", categoria: "pretos-velhos", origemCulturalId: "banto", pontos: 3, oracoes: 1 }
+  ]
+};
+
+function getCultura(id) {
+  return CATALOGO.culturas.find(c => c.id === id);
+}
+
+/* ==========================================================
+   NAVEGAÇÃO ENTRE TELAS
+   ========================================================== */
+function showView(name) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-" + name).classList.add("active");
+  document.querySelectorAll(".tabbar .tab").forEach(t => t.classList.remove("active"));
+  const activeBar = document.querySelector("#view-" + name + " .tabbar");
+  if (activeBar) {
+    const idx = { home: 0, biblioteca: 1, historia: 2, perfil: 3 }[name];
+    if (idx !== undefined) activeBar.children[idx].classList.add("active");
+  }
+}
+
+/* ==========================================================
+   HOME — TODO: substituir por chamadas reais
+   ========================================================== */
+function loadHomeData() {
+  // TODO: buscar guia do dia, streak e sugestões do backend
+}
+
+function renderHomeSuggestions(items) {
+  // TODO: gerar o HTML de #home-suggestions a partir de `items`
+}
+
+function onOpenNotifications() {
+  // TODO: abrir tela/modal de notificações
+}
+
+/* ==========================================================
+   BIBLIOTECA — TODO: substituir por chamadas reais
+   ========================================================== */
+function setActiveFilter(el, categoria) {
+  document.querySelectorAll("#biblioteca-filters .filter").forEach(f => f.classList.remove("active"));
+  el.classList.add("active");
+  appState.bibliotecaFiltroAtivo = categoria;
+  const guias = categoria === "todos"
+    ? CATALOGO.guias
+    : CATALOGO.guias.filter(g => g.categoria === categoria);
+  renderBibliotecaList(guias);
+}
+
+function renderBibliotecaList(guias) {
+  const container = document.getElementById("biblioteca-list");
+  container.innerHTML = guias.map(g => {
+    const cultura = getCultura(g.origemCulturalId);
+    return `
+      <div class="list-item" onclick="onOpenGuia('${g.id}')">
+        <div class="dot">${g.nome.charAt(0)}</div>
+        <div class="meta">
+          <p class="title">${g.nome}</p>
+          <p class="sub">${g.pontos} pontos · ${g.oracoes} orações${cultura ? " · " + cultura.nome : ""}</p>
+        </div>
+        <span class="chev">›</span>
+      </div>`;
+  }).join("");
+}
+
+function onOpenGuia(guiaId) {
+  // TODO: abrir tela de detalhe do guia (lista de pontos/orações daquele guia)
+  console.log("abrir guia:", guiaId);
+}
+
+function onOpenSearch() {
+  // TODO: abrir busca dentro da biblioteca
+}
+
+/* ==========================================================
+   HISTÓRIA — raízes afro-diaspóricas
+   ========================================================== */
+function renderHistoriaList() {
+  const container = document.getElementById("historia-list");
+  container.innerHTML = CATALOGO.culturas.map(c => `
+    <div class="list-item" onclick="onOpenCultura('${c.id}')">
+      <div class="dot">${c.nome.charAt(0)}</div>
+      <div class="meta">
+        <p class="title">${c.nome}</p>
+        <p class="sub">${c.regiaoOrigem}</p>
+      </div>
+      <span class="chev">›</span>
+    </div>`).join("");
+}
+
+function onOpenCultura(culturaId) {
+  appState.culturaAberta = culturaId;
+  renderCulturaDetalhe(culturaId);
+  showView("cultura-detalhe");
+}
+
+function renderCulturaDetalhe(culturaId) {
+  const cultura = getCultura(culturaId);
+  if (!cultura) return;
+
+  document.getElementById("cultura-regiao").textContent = cultura.regiaoOrigem;
+  document.getElementById("cultura-nome").textContent = cultura.nome;
+  document.getElementById("cultura-resumo").textContent = cultura.resumo;
+
+  document.getElementById("cultura-timeline").innerHTML = cultura.marcos.map(m => `
+    <div class="timeline-item">
+      <p class="timeline-year">${m.ano}</p>
+      <p class="timeline-text">${m.texto}</p>
+    </div>`).join("");
+
+  const guiasRelacionados = CATALOGO.guias.filter(g => g.origemCulturalId === culturaId);
+  const guiasContainer = document.getElementById("cultura-guias-relacionados");
+  guiasContainer.innerHTML = guiasRelacionados.length
+    ? guiasRelacionados.map(g => `
+      <div class="list-item" onclick="onOpenGuia('${g.id}')">
+        <div class="dot">${g.nome.charAt(0)}</div>
+        <div class="meta"><p class="title">${g.nome}</p><p class="sub">${g.pontos} pontos · ${g.oracoes} orações</p></div>
+        <span class="chev">›</span>
+      </div>`).join("")
+    : `<p class="historia-resumo">Nenhum guia catalogado ainda para esta tradição.</p>`;
+}
+
+/* ==========================================================
+   PLAYER — TODO: ligar no elemento <audio> real
+   ========================================================== */
+function onOpenTrack(trackId) {
+  appState.currentTrackId = trackId;
+  showView("player");
+}
+
+function onTogglePlay() {
+  const audio = document.getElementById("audio-player");
+  const btn = document.getElementById("play-pause-btn");
+  appState.isPlaying = !appState.isPlaying;
+  btn.textContent = appState.isPlaying ? "❚❚" : "▶";
+}
+
+function onSkip(direction) {
+  // TODO: pular para próxima/anterior faixa da mesma playlist
+}
+
+function onToggleLyrics() {
+  // TODO: expandir/colapsar bloco com a letra do ponto
+}
+
+function updateWaveformProgress(percentPlayed) {
+  // TODO: recalcular quais .bar recebem a classe "played" conforme o áudio avança
+}
+
+function updatePlayerTime(currentSeconds, totalSeconds) {
+  // TODO: formatar e atualizar #player-time-current / #player-time-total
+}
+
+/* ==========================================================
+   STREAK / LOG DE ORAÇÕES — TODO
+   ========================================================== */
+function markTrackAsCompleted(trackId) {
+  // TODO: registrar no backend
+}
+
+/* ==========================================================
+   INICIALIZAÇÃO
+   ========================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+  loadHomeData();
+  renderBibliotecaList(CATALOGO.guias);
+  renderHistoriaList();
+});
+</script>
+</body>
+</html>
