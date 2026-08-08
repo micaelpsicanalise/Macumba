@@ -15,8 +15,7 @@
   body{
     margin:0; background:var(--bg); color:var(--ink);
     font-family:'Inter', system-ui, sans-serif; font-size:14px;
-  }
-  .wrap{ max-width:920px; margin:0 auto; padding:28px 20px 80px; }
+  }apx 80px; }
   h1{ font-size:20px; margin:0 0 4px; }
   h2{ font-size:16px; margin:0 0 14px; }
   .muted{ color:var(--ink-soft); font-size:12.5px; }
@@ -90,6 +89,7 @@
       <div class="tabs">
         <span class="tab-btn active" id="tab-guias" onclick="switchTab('guias')">Guias</span>
         <span class="tab-btn" id="tab-conteudos" onclick="switchTab('conteudos')">Conteúdos</span>
+        <span class="tab-btn" id="tab-culturas" onclick="switchTab('culturas')">Culturas</span>
         <span class="tab-btn" id="tab-buzios" onclick="switchTab('buzios')">Búzios</span>
       </div>
 
@@ -129,6 +129,8 @@
               <input type="text" id="guia-categoria" placeholder="Preto-velho, Lwa Rada, Orisha...">
             </div>
           </div>
+          <label>Origem cultural (catálogo estruturado — evita digitar de novo em cada guia)</label>
+          <select id="guia-origem-cultural"><option value="">— nenhuma —</option></select>
           <label>Linha (aparece no card do dia)</label>
           <input type="text" id="guia-linha" placeholder="linha de guerreiro">
           <label>Descrição</label>
@@ -226,6 +228,60 @@
           <table>
             <thead><tr><th>Guia</th><th>Título</th><th>Tipo</th><th>Imagem</th><th>Áudio</th><th></th></tr></thead>
             <tbody id="conteudos-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ---------- CULTURAS (raízes afro-diaspóricas) ---------- -->
+      <div id="panel-culturas" style="display:none;">
+        <div class="card">
+          <h2 id="cultura-form-title">Nova cultura</h2>
+          <input type="hidden" id="cultura-id">
+          <div class="row">
+            <div>
+              <label>Nome</label>
+              <input type="text" id="cultura-nome" placeholder="Nagô / Iorubá">
+            </div>
+            <div>
+              <label>Slug (usado como referência, sem espaço)</label>
+              <input type="text" id="cultura-slug" placeholder="ioruba">
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Região de origem</label>
+              <input type="text" id="cultura-regiao" placeholder="Sudoeste da Nigéria e Benin">
+            </div>
+            <div>
+              <label>Período</label>
+              <input type="text" id="cultura-periodo" placeholder="Trazida ao Brasil entre 1750–1850">
+            </div>
+          </div>
+          <label>Resumo</label>
+          <textarea id="cultura-resumo" placeholder="Texto curto explicando a cultura e sua ligação com as tradições do app"></textarea>
+          <label>Linha do tempo — um marco por linha, no formato "ano | texto"</label>
+          <textarea id="cultura-marcos" placeholder="Séc. XVIII–XIX | Chegada forçada de povos iorubás ao Brasil.&#10;Séc. XIX | Formação dos primeiros terreiros de Candomblé Nagô na Bahia."></textarea>
+          <div class="row">
+            <div>
+              <label>Ordem</label>
+              <input type="number" id="cultura-ordem" value="0">
+            </div>
+            <div class="checkbox-row" style="margin-top:32px;">
+              <input type="checkbox" id="cultura-ativo" checked>
+              <label style="margin:0;">Ativa (visível no app)</label>
+            </div>
+          </div>
+          <div style="margin-top:16px; display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="saveCultura()">Salvar cultura</button>
+            <button class="btn" onclick="resetCulturaForm()">Nova cultura</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Culturas cadastradas</h2>
+          <table>
+            <thead><tr><th>Nome</th><th>Região</th><th>Marcos</th><th>Ordem</th><th>Status</th><th></th></tr></thead>
+            <tbody id="culturas-table"></tbody>
           </table>
         </div>
       </div>
@@ -354,6 +410,7 @@
   let odusCache = [];
   let compostosCache = [];
   let conteudosCache = [];
+  let culturasCache = [];
   let pendingAudioFile = null;
   let pendingImagemFile = null;
   let pendingRiscadoFile = null;
@@ -381,6 +438,7 @@
     document.getElementById("admin-email").textContent = s.user.email;
     document.getElementById("view-gate").classList.remove("active");
     document.getElementById("view-admin").classList.add("active");
+    await loadCulturas();
     await loadGuias();
     await loadConteudos();
     await loadOdus();
@@ -397,9 +455,11 @@
   function switchTab(name) {
     document.getElementById("panel-guias").style.display = name === "guias" ? "block" : "none";
     document.getElementById("panel-conteudos").style.display = name === "conteudos" ? "block" : "none";
+    document.getElementById("panel-culturas").style.display = name === "culturas" ? "block" : "none";
     document.getElementById("panel-buzios").style.display = name === "buzios" ? "block" : "none";
     document.getElementById("tab-guias").classList.toggle("active", name === "guias");
     document.getElementById("tab-conteudos").classList.toggle("active", name === "conteudos");
+    document.getElementById("tab-culturas").classList.toggle("active", name === "culturas");
     document.getElementById("tab-buzios").classList.toggle("active", name === "buzios");
   }
 
@@ -414,16 +474,25 @@
 
   function renderGuiasTable() {
     const tbody = document.getElementById("guias-table");
-    tbody.innerHTML = guiasCache.map(g => `
+    tbody.innerHTML = guiasCache.map(g => {
+      const cultura = culturasCache.find(c => c.id === g.origem_cultural_id);
+      return `
       <tr>
         <td>${escapeHtml(g.nome)}</td>
         <td>${escapeHtml(g.tradicao || "umbanda")}</td>
-        <td>${g.grupo === "auxiliar" ? "Auxiliar" : "Principal"}${g.categoria ? " · " + escapeHtml(g.categoria) : ""}</td>
+        <td>${g.grupo === "auxiliar" ? "Auxiliar" : "Principal"}${g.categoria ? " · " + escapeHtml(g.categoria) : ""}${cultura ? " · " + escapeHtml(cultura.nome) : ""}</td>
         <td>${g.ordem}</td>
         <td><span class="badge ${g.ativo ? "" : "off"}">${g.ativo ? "ativo" : "oculto"}</span></td>
         <td><button class="btn btn-sm" onclick="editGuia('${g.id}')">Editar</button></td>
       </tr>
-    `).join("") || `<tr><td colspan="6" class="muted">Nenhum guia ainda.</td></tr>`;
+    `;
+    }).join("") || `<tr><td colspan="6" class="muted">Nenhum guia ainda.</td></tr>`;
+  }
+
+  function renderOrigemCulturalSelect() {
+    const select = document.getElementById("guia-origem-cultural");
+    select.innerHTML = `<option value="">— nenhuma —</option>` +
+      culturasCache.map(c => `<option value="${c.id}">${escapeHtml(c.nome)}</option>`).join("");
   }
 
   function renderGuiaSelect() {
@@ -440,6 +509,7 @@
     document.getElementById("guia-tradicao").value = g.tradicao || "umbanda";
     document.getElementById("guia-grupo").value = g.grupo || "principal";
     document.getElementById("guia-categoria").value = g.categoria || "";
+    document.getElementById("guia-origem-cultural").value = g.origem_cultural_id || "";
     document.getElementById("guia-linha").value = g.linha || "";
     document.getElementById("guia-descricao").value = g.descricao || "";
     document.getElementById("guia-ordem").value = g.ordem || 0;
@@ -462,6 +532,7 @@
     document.getElementById("guia-tradicao").value = "umbanda";
     document.getElementById("guia-grupo").value = "principal";
     document.getElementById("guia-categoria").value = "";
+    document.getElementById("guia-origem-cultural").value = "";
     document.getElementById("guia-linha").value = "";
     document.getElementById("guia-descricao").value = "";
     document.getElementById("guia-ordem").value = 0;
@@ -500,6 +571,7 @@
         tradicao: document.getElementById("guia-tradicao").value.trim().toLowerCase() || "umbanda",
         grupo: document.getElementById("guia-grupo").value,
         categoria: document.getElementById("guia-categoria").value.trim() || null,
+        origem_cultural_id: document.getElementById("guia-origem-cultural").value || null,
         linha: document.getElementById("guia-linha").value.trim(),
         descricao: document.getElementById("guia-descricao").value.trim(),
         ordem: parseInt(document.getElementById("guia-ordem").value) || 0,
@@ -704,6 +776,98 @@
     } finally {
       btn.disabled = false;
     }
+  }
+
+  /* ---------------- CULTURAS ---------------- */
+  async function loadCulturas() {
+    const { data, error } = await supabaseClient.from("culturas").select("*").order("ordem");
+    if (error) { console.error(error); return; }
+    culturasCache = data || [];
+    renderCulturasTable();
+    renderOrigemCulturalSelect();
+  }
+
+  function renderCulturasTable() {
+    const tbody = document.getElementById("culturas-table");
+    tbody.innerHTML = culturasCache.map(c => `
+      <tr>
+        <td>${escapeHtml(c.nome)}</td>
+        <td>${escapeHtml(c.regiao_origem || "")}</td>
+        <td>${Array.isArray(c.marcos) ? c.marcos.length : 0}</td>
+        <td>${c.ordem}</td>
+        <td><span class="badge ${c.ativo ? "" : "off"}">${c.ativo ? "ativa" : "oculta"}</span></td>
+        <td><button class="btn btn-sm" onclick="editCultura('${c.id}')">Editar</button></td>
+      </tr>
+    `).join("") || `<tr><td colspan="6" class="muted">Nenhuma cultura ainda.</td></tr>`;
+  }
+
+  function marcosParaTexto(marcos) {
+    if (!Array.isArray(marcos)) return "";
+    return marcos.map(m => `${m.ano || ""} | ${m.texto || ""}`).join("\n");
+  }
+
+  function textoParaMarcos(texto) {
+    return texto.split("\n")
+      .map(l => l.trim())
+      .filter(Boolean)
+      .map(l => {
+        const [ano, ...resto] = l.split("|");
+        return { ano: (ano || "").trim(), texto: resto.join("|").trim() };
+      });
+  }
+
+  function editCultura(id) {
+    const c = culturasCache.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById("cultura-id").value = c.id;
+    document.getElementById("cultura-nome").value = c.nome || "";
+    document.getElementById("cultura-slug").value = c.slug || "";
+    document.getElementById("cultura-regiao").value = c.regiao_origem || "";
+    document.getElementById("cultura-periodo").value = c.periodo || "";
+    document.getElementById("cultura-resumo").value = c.resumo || "";
+    document.getElementById("cultura-marcos").value = marcosParaTexto(c.marcos);
+    document.getElementById("cultura-ordem").value = c.ordem || 0;
+    document.getElementById("cultura-ativo").checked = !!c.ativo;
+    document.getElementById("cultura-form-title").textContent = "Editar cultura";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetCulturaForm() {
+    document.getElementById("cultura-id").value = "";
+    document.getElementById("cultura-nome").value = "";
+    document.getElementById("cultura-slug").value = "";
+    document.getElementById("cultura-regiao").value = "";
+    document.getElementById("cultura-periodo").value = "";
+    document.getElementById("cultura-resumo").value = "";
+    document.getElementById("cultura-marcos").value = "";
+    document.getElementById("cultura-ordem").value = 0;
+    document.getElementById("cultura-ativo").checked = true;
+    document.getElementById("cultura-form-title").textContent = "Nova cultura";
+  }
+
+  async function saveCultura() {
+    const id = document.getElementById("cultura-id").value;
+    const payload = {
+      nome: document.getElementById("cultura-nome").value.trim(),
+      slug: document.getElementById("cultura-slug").value.trim(),
+      regiao_origem: document.getElementById("cultura-regiao").value.trim() || null,
+      periodo: document.getElementById("cultura-periodo").value.trim() || null,
+      resumo: document.getElementById("cultura-resumo").value.trim() || null,
+      marcos: textoParaMarcos(document.getElementById("cultura-marcos").value),
+      ordem: parseInt(document.getElementById("cultura-ordem").value) || 0,
+      ativo: document.getElementById("cultura-ativo").checked,
+    };
+    if (!payload.nome || !payload.slug) {
+      alert("Nome e slug são obrigatórios.");
+      return;
+    }
+    const { error } = id
+      ? await supabaseClient.from("culturas").update(payload).eq("id", id)
+      : await supabaseClient.from("culturas").insert(payload);
+    if (error) { alert("Erro: " + error.message); return; }
+    resetCulturaForm();
+    await loadCulturas();
+    await loadGuias();
   }
 
   /* ---------------- BÚZIOS: ODUS PRIMÁRIOS ---------------- */
