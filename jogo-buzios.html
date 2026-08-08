@@ -22,36 +22,37 @@
   --radius: 18px;
 }
 *{box-sizing:border-box;}
+html{ background: var(--bg); }
 body{
   margin:0;
   background: var(--bg);
   font-family:'Inter', sans-serif;
   color: var(--ink);
-  display:flex;
-  justify-content:center;
-  padding:32px 16px;
+  min-height:100vh;
+  min-height:100dvh;
 }
-.device{
-  width:380px;
-  background: var(--green-dark);
-  border-radius:36px;
-  padding:14px;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+.site-nav{
+  display:flex; align-items:center; justify-content:space-between;
+  max-width:760px; margin:0 auto;
+  padding:20px 24px;
+  border-bottom:1px solid var(--line);
 }
-.screen{
-  background: var(--bg);
-  border-radius:24px;
-  min-height:720px;
-  overflow:hidden;
-  position:relative;
-  display:flex;
-  flex-direction:column;
+.brand{
+  font-family:'Fraunces', serif; font-size:19px; font-weight:500; color:var(--ink);
+  display:flex; align-items:center; gap:8px;
 }
-.status-dot{
-  width:36px; height:4px; background:var(--ink); opacity:0.15;
-  border-radius:2px; margin:10px auto 0;
+.brand .mark{ width:9px; height:9px; border-radius:50%; background:var(--gold); display:inline-block; }
+.nav-links{ display:flex; gap:22px; align-items:center; flex-wrap:wrap; }
+.nav-link{
+  background:none; border:none; font-family:'Inter', sans-serif; font-size:13px;
+  color:var(--ink-soft); cursor:pointer; padding:4px 0; position:relative;
 }
-.view{ display:none; flex:1; flex-direction:column; padding:20px 20px 0; }
+.nav-link.active{ color:var(--ink); font-weight:600; }
+.nav-link.active::after{
+  content:""; position:absolute; left:0; right:0; bottom:-6px; height:2px; background:var(--gold);
+}
+.site-main{ max-width:760px; margin:0 auto; padding:0 24px 80px; }
+.view{ display:none; flex-direction:column; padding-top:32px; }
 .view.active{ display:flex; }
 h1,h2,h3{ font-family:'Fraunces', serif; font-weight:500; margin:0; color:var(--ink); }
 p{ margin:0; }
@@ -59,10 +60,10 @@ p{ margin:0; }
   font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
   color: var(--ink-soft); font-weight:500;
 }
-.top-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; gap:8px; }
-.greeting{ font-size:15px; font-family:'Fraunces', serif; }
+.top-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; gap:8px; }
+.greeting{ font-size:20px; font-family:'Fraunces', serif; }
 .icon-btn{
-  width:34px; height:34px; border-radius:50%; background:var(--card);
+  width:36px; height:36px; border-radius:50%; background:var(--card);
   border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
   color:var(--ink-soft); font-size:15px; cursor:pointer; flex-shrink:0;
 }
@@ -187,19 +188,14 @@ p{ margin:0; }
   font-size:12px; padding:10px; border-radius:12px; cursor:pointer; margin-top:6px;
 }
 
-.tabbar{
-  display:flex; justify-content:space-around; align-items:center;
-  padding:14px 10px; border-top:1px solid var(--line); margin-top:auto; background:var(--bg);
-}
-.tab{
-  background:none; border:none; color:var(--ink-soft); font-size:11px;
-  display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;
-  font-family:'Inter', sans-serif;
-}
-.tab .glyph{ width:20px; height:20px; border-radius:6px; border:1.5px solid currentColor; }
-.tab.active{ color:var(--green); font-weight:600; }
+.scroll{ padding-bottom:10px; }
 
-.scroll{ overflow-y:auto; padding-bottom:10px; }
+@media (max-width:640px){
+  .site-nav{ padding:16px; }
+  .nav-links{ gap:14px; }
+  .site-main{ padding:0 16px 60px; }
+  .view{ padding-top:22px; }
+}
 
 /* ---------- SOBRE ---------- */
 .sobre-block{ margin-bottom:20px; }
@@ -214,19 +210,22 @@ p{ margin:0; }
 </style>
 </head>
 <body>
-<div class="device">
-  <div class="screen">
-    <div class="status-dot"></div>
+<nav class="site-nav" id="site-nav">
+  <div class="brand"><span class="mark"></span>Jogo de Búzios</div>
+  <div class="nav-links">
+    <button class="nav-link active" data-view="lancar" onclick="showView('lancar')">Lançar</button>
+    <button class="nav-link" data-view="historico" onclick="showView('historico')">Histórico</button>
+    <button class="nav-link" data-view="sobre" onclick="showView('sobre')">Sobre</button>
+    <button class="nav-link" data-view="itans" onclick="showView('itans')">Itans</button>
+  </div>
+</nav>
+
+<main class="site-main">
 
     <!-- ================= LANÇAR ================= -->
     <section id="view-lancar" class="view active">
       <div class="top-row">
-        <span class="greeting">Jogo de Búzios</span>
-        <div style="display:flex; gap:8px;">
-          <div class="icon-btn" onclick="showView('itans')" title="Itans">📖</div>
-          <div class="icon-btn" onclick="showView('sobre')" title="Sobre o jogo">?</div>
-          <div class="icon-btn" onclick="showView('historico')" title="Histórico">≡</div>
-        </div>
+        <span class="greeting">Consultar os búzios</span>
       </div>
 
       <div class="filters" id="sistema-filters">
@@ -255,25 +254,16 @@ p{ margin:0; }
     <section id="view-historico" class="view">
       <div class="top-row">
         <h3>Histórico</h3>
-        <div class="icon-btn" onclick="showView('lancar')">‹</div>
       </div>
       <p class="section-label">Consultas salvas neste navegador</p>
       <div class="scroll" id="historico-list"></div>
       <button class="clear-btn" onclick="limparHistorico()">Limpar histórico</button>
-
-      <div class="tabbar">
-        <button class="tab" onclick="showView('lancar')"><span class="glyph"></span>Lançar</button>
-        <button class="tab active" onclick="showView('historico')"><span class="glyph"></span>Histórico</button>
-        <button class="tab" onclick="showView('sobre')"><span class="glyph"></span>Sobre</button>
-        <button class="tab" onclick="showView('itans')"><span class="glyph"></span>Itans</button>
-      </div>
     </section>
 
     <!-- ================= SOBRE ================= -->
     <section id="view-sobre" class="view">
       <div class="top-row">
         <h3>Sobre o jogo</h3>
-        <div class="icon-btn" onclick="showView('lancar')">‹</div>
       </div>
       <div class="scroll">
 
@@ -312,13 +302,6 @@ p{ margin:0; }
         </div>
 
       </div>
-
-      <div class="tabbar">
-        <button class="tab" onclick="showView('lancar')"><span class="glyph"></span>Lançar</button>
-        <button class="tab" onclick="showView('historico')"><span class="glyph"></span>Histórico</button>
-        <button class="tab active" onclick="showView('sobre')"><span class="glyph"></span>Sobre</button>
-        <button class="tab" onclick="showView('itans')"><span class="glyph"></span>Itans</button>
-      </div>
     </section>
 
     <!-- ================= ITANS ================= -->
@@ -328,17 +311,9 @@ p{ margin:0; }
         <div class="icon-btn" onclick="onVoltarItans()">‹</div>
       </div>
       <div class="scroll" id="itans-content"></div>
-
-      <div class="tabbar">
-        <button class="tab" onclick="showView('lancar')"><span class="glyph"></span>Lançar</button>
-        <button class="tab" onclick="showView('historico')"><span class="glyph"></span>Histórico</button>
-        <button class="tab" onclick="showView('sobre')"><span class="glyph"></span>Sobre</button>
-        <button class="tab active" onclick="showView('itans')"><span class="glyph"></span>Itans</button>
-      </div>
     </section>
 
-  </div>
-</div>
+</main>
 
 <script>
 /* ==========================================================
@@ -497,6 +472,12 @@ function limparHistorico() {
 function showView(name) {
   document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
   document.getElementById("view-" + name).classList.add("active");
+  const navLink = document.querySelector('.nav-link[data-view="' + name + '"]');
+  if (navLink) {
+    document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+    navLink.classList.add("active");
+  }
+  window.scrollTo({ top: 0, behavior: "auto" });
   if (name === "historico") renderHistorico();
   if (name === "itans") { appState.itansModo = "lista"; renderItansLista(); }
 }
