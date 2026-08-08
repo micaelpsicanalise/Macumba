@@ -36,6 +36,7 @@
     --line: rgba(30,42,32,0.14);
     --card: #FFFFFF;
     --radius: 18px;
+    --content-width: 1040px;
   }
   *{box-sizing:border-box;}
   html{ background: var(--bg); }
@@ -47,34 +48,34 @@
     min-height:100vh;
     min-height:100dvh;
   }
-  .device{
-    width:100%;
-    max-width:520px;
-    margin:0 auto;
-    background: var(--bg);
-    display:flex;
-    flex-direction:column;
-    min-height:100vh;
-    min-height:100dvh;
-  }
-  .screen{
-    background: var(--bg);
-    overflow:hidden;
-    position:relative;
-    display:flex;
-    flex-direction:column;
-    flex:1;
-  }
-  .status-dot{ display:none; }
+  a{ color:inherit; }
 
-  /* Em telas largas o conteúdo só ganha um pouco mais de respiro nas
-     laterais — sem moldura, sem "aparência de celular", é a mesma
-     página, só com mais espaço em volta. */
-  @media (min-width:640px){
-    .device{ padding-top:24px; }
+  /* ---------------- NAV (topo, sempre visível, site normal) ---------------- */
+  .site-nav{
+    display:flex; align-items:center; justify-content:space-between;
+    max-width: var(--content-width); margin:0 auto;
+    padding:20px 24px;
+    border-bottom:1px solid var(--line);
+  }
+  .site-nav.hidden{ display:none; }
+  .brand{
+    font-family:'Fraunces', serif; font-size:19px; font-weight:500; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  .brand .mark{ width:9px; height:9px; border-radius:50%; background:var(--gold); display:inline-block; }
+  .nav-links{ display:flex; gap:28px; align-items:center; }
+  .nav-link{
+    background:none; border:none; font-family:'Inter', sans-serif; font-size:13.5px;
+    color:var(--ink-soft); cursor:pointer; padding:4px 0; position:relative;
+  }
+  .nav-link.active{ color:var(--ink); font-weight:600; }
+  .nav-link.active::after{
+    content:""; position:absolute; left:0; right:0; bottom:-6px; height:2px; background:var(--gold);
   }
 
-  .view{ display:none; flex:1; flex-direction:column; padding:20px 20px 0; overflow-y:auto; }
+  /* ---------------- MAIN ---------------- */
+  .site-main{ max-width: var(--content-width); margin:0 auto; padding:0 24px 80px; }
+  .view{ display:none; flex-direction:column; padding-top:36px; }
   .view.active{ display:flex; }
 
   h1,h2,h3{ font-family:'Fraunces', serif; font-weight:500; margin:0; color:var(--ink); }
@@ -84,142 +85,175 @@
     color: var(--ink-soft); font-weight:500;
   }
 
-  .top-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
-  .greeting{ font-size:15px; font-family:'Fraunces', serif; }
+  .top-row{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; gap:16px; }
+  .greeting{ font-size:22px; font-family:'Fraunces', serif; }
   .icon-btn{
-    width:34px; height:34px; border-radius:50%; background:var(--card);
+    width:36px; height:36px; border-radius:50%; background:var(--card);
     border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
-    color:var(--ink-soft); font-size:15px; cursor:pointer;
+    color:var(--ink-soft); font-size:15px; cursor:pointer; flex-shrink:0;
   }
 
+  /* ---------------- HOME hero ---------------- */
+  .home-hero{ display:flex; gap:16px; align-items:stretch; margin-bottom:32px; flex-wrap:wrap; }
   .guia-card{
     background: var(--green); color:#fff; border-radius: var(--radius);
-    padding:20px; margin-bottom:14px; position:relative; overflow:hidden;
+    padding:28px; position:relative; overflow:hidden; flex:2 1 320px;
   }
   .guia-card .eyebrow{ color: var(--gold-soft); }
-  .guia-card h2{ color:#fff; font-size:24px; margin-top:6px; }
-  .guia-card .sub{ font-size:12px; color:#D9E2DA; margin-top:4px; }
+  .guia-card h2{ color:#fff; font-size:30px; margin-top:8px; }
+  .guia-card .sub{ font-size:13px; color:#D9E2DA; margin-top:6px; }
   .ring{
     position:absolute; right:-30px; top:-30px; width:120px; height:120px;
     border-radius:50%; border:1px solid rgba(255,255,255,0.18);
   }
   .ring.small{ right:-10px; top:-10px; width:70px; height:70px; }
 
-  .stat-row{ display:flex; gap:10px; margin-bottom:18px; }
+  .stat-row{ display:flex; flex-direction:column; gap:10px; flex:1 1 160px; }
   .stat{
     flex:1; background:var(--card); border:1px solid var(--line);
-    border-radius:14px; padding:12px; text-align:center;
+    border-radius:14px; padding:16px; display:flex; align-items:center; justify-content:space-between;
   }
-  .stat .num{ font-family:'Fraunces', serif; font-size:22px; }
-  .stat .label{ font-size:10.5px; color:var(--ink-soft); margin-top:2px; }
+  .stat .num{ font-family:'Fraunces', serif; font-size:26px; }
+  .stat .label{ font-size:11.5px; color:var(--ink-soft); text-align:right; }
 
-  .section-label{ font-size:12px; color:var(--ink-soft); margin-bottom:8px; }
+  .section-label{ font-size:12.5px; color:var(--ink-soft); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.04em; }
+
+  /* ---------------- Listas em grade — nada de coluna única forçada ---------------- */
+  .list-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px; }
   .list-item{
     display:flex; align-items:center; gap:12px; background:var(--card);
-    border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:8px;
-    cursor:pointer;
+    border:1px solid var(--line); border-radius:14px; padding:14px 16px;
+    cursor:pointer; transition:border-color .15s ease;
   }
+  .list-item:hover{ border-color:var(--green); }
   .list-item .dot{
-    width:36px; height:36px; border-radius:50%; background: var(--gold-soft);
+    width:38px; height:38px; border-radius:50%; background: var(--gold-soft);
     flex-shrink:0; display:flex; align-items:center; justify-content:center;
     color: var(--gold); font-size:14px; font-family:'Fraunces', serif; overflow:hidden;
   }
-  .list-item .meta{ flex:1; }
-  .list-item .title{ font-size:13.5px; font-weight:500; }
-  .list-item .sub{ font-size:11px; color:var(--ink-soft); margin-top:1px; }
-  .list-item .chev{ color:var(--ink-soft); font-size:13px; }
+  .list-item .meta{ flex:1; min-width:0; }
+  .list-item .title{ font-size:14px; font-weight:500; }
+  .list-item .sub{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+  .list-item .chev{ color:var(--ink-soft); font-size:14px; flex-shrink:0; }
 
-  .tabbar{
-    display:flex; justify-content:space-around; align-items:center;
-    padding:14px 10px calc(14px + env(safe-area-inset-bottom)) 10px;
-    border-top:1px solid var(--line); margin-top:auto; background:var(--bg);
-  }
-  .tab{
-    background:none; border:none; color:var(--ink-soft); font-size:11px;
-    display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer;
-    font-family:'Inter', sans-serif;
-  }
-  .tab .glyph{ width:20px; height:20px; border-radius:6px; border:1.5px solid currentColor; }
-  .tab.active{ color:var(--green); font-weight:600; }
-
-  .filters{ display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; }
+  .filters{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
   .filter{
-    font-size:11.5px; padding:6px 12px; border-radius:20px; white-space:nowrap;
+    font-size:12px; padding:7px 14px; border-radius:20px; white-space:nowrap;
     border:1px solid var(--line); color:var(--ink-soft); cursor:pointer;
   }
   .filter.active{ background:var(--green); border-color:var(--green); color:#fff; }
 
-  .back-row{ display:flex; align-items:center; gap:6px; margin-bottom:16px; color:var(--ink-soft); font-size:12.5px; cursor:pointer; }
+  .back-row{ display:flex; align-items:center; gap:6px; margin-bottom:20px; color:var(--ink-soft); font-size:13px; cursor:pointer; }
+  .back-row:hover{ color:var(--ink); }
 
+  /* ---------------- Player — bloco focado, mas dentro da página normal ---------------- */
+  .player-panel{ max-width:440px; }
   .art{
     width:140px; height:140px; border-radius:20px; background:var(--green);
-    margin:0 auto 16px; position:relative; overflow:hidden;
+    margin-bottom:20px; position:relative; overflow:hidden;
   }
   .art .ring{ border-color: rgba(255,255,255,0.25); }
 
-  .track-title{ text-align:center; font-size:16px; }
-  .track-sub{ text-align:center; font-size:12px; color:var(--ink-soft); margin-top:4px; margin-bottom:22px; }
+  .track-title{ font-size:19px; }
+  .track-sub{ font-size:13px; color:var(--ink-soft); margin-top:4px; margin-bottom:26px; }
 
   .waveform{ display:flex; align-items:flex-end; gap:3px; height:40px; margin-bottom:8px; }
   .bar{ flex:1; background:var(--line); border-radius:2px; }
   .bar.played{ background:var(--gold); }
 
-  .time-row{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--ink-soft); margin-bottom:22px; }
+  .time-row{ display:flex; justify-content:space-between; font-size:11px; color:var(--ink-soft); margin-bottom:24px; }
 
-  .controls{ display:flex; justify-content:center; align-items:center; gap:26px; margin-bottom:22px; }
-  .controls .side{ color:var(--ink-soft); font-size:18px; cursor:pointer; }
+  .controls{ display:flex; align-items:center; gap:26px; margin-bottom:24px; }
+  .controls .side{ color:var(--ink-soft); font-size:19px; cursor:pointer; }
   .play-btn{
-    width:52px; height:52px; border-radius:50%; background:var(--green);
+    width:54px; height:54px; border-radius:50%; background:var(--green);
     color:#fff; display:flex; align-items:center; justify-content:center;
-    font-size:18px; cursor:pointer; border:none;
+    font-size:19px; cursor:pointer; border:none;
   }
 
   .lyric-toggle{
     display:flex; justify-content:space-between; align-items:center;
-    border-top:1px solid var(--line); padding:14px 0; font-size:12px; color:var(--ink-soft);
+    border-top:1px solid var(--line); padding:14px 0; font-size:13px; color:var(--ink-soft);
     cursor:pointer;
   }
 
-  /* Login */
-  .login-view{ justify-content:center; align-items:center; text-align:center; gap:18px; padding:20px 28px 0; }
-  .login-view h1{ font-size:26px; }
-  .login-view p.desc{ font-size:13px; color:var(--ink-soft); line-height:1.5; margin-top:6px; }
+  /* ---------------- Login ---------------- */
+  .login-view{ align-items:flex-start; padding-top:14vh; }
+  .login-view .login-box{ max-width:380px; }
+  .login-view h1{ font-size:32px; margin-top:8px; }
+  .login-view p.desc{ font-size:14px; color:var(--ink-soft); line-height:1.55; margin-top:10px; }
   .google-btn{
     display:flex; align-items:center; justify-content:center; gap:10px;
     background:#fff; border:1px solid var(--line); border-radius:14px;
-    padding:13px 20px; font-family:'Inter',sans-serif; font-size:13.5px; font-weight:600;
-    color:var(--ink); cursor:pointer; width:100%; margin-top:22px;
+    padding:14px 20px; font-family:'Inter',sans-serif; font-size:14px; font-weight:600;
+    color:var(--ink); cursor:pointer; width:100%; margin-top:26px;
   }
-  .login-note{ font-size:11px; color:var(--ink-soft); margin-top:14px; }
+  .login-note{ font-size:11.5px; color:var(--ink-soft); margin-top:14px; }
 
-  /* Perfil */
-  .profile-header{ text-align:center; margin-bottom:22px; }
+  /* ---------------- Perfil ---------------- */
+  .profile-header{ display:flex; align-items:center; gap:16px; margin-bottom:28px; }
   .avatar-circle{
-    width:64px; height:64px; border-radius:50%; background:var(--gold-soft);
-    color:var(--gold); font-family:'Fraunces',serif; font-size:24px;
-    display:flex; align-items:center; justify-content:center; margin:0 auto 12px;
+    width:60px; height:60px; border-radius:50%; background:var(--gold-soft);
+    color:var(--gold); font-family:'Fraunces',serif; font-size:22px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
   }
-  .profile-name{ font-size:17px; }
-  .profile-email{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .profile-name{ font-size:18px; }
+  .profile-email{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
   .signout-btn{
     background:var(--card); border:1px solid var(--line); border-radius:14px;
-    padding:12px; text-align:center; font-size:13px; color:var(--ink); cursor:pointer; margin-top:10px;
+    padding:13px; text-align:center; font-size:13.5px; color:var(--ink); cursor:pointer;
+    margin-top:16px; max-width:200px;
   }
+  .signout-btn:hover{ border-color:var(--green); }
 
-  .empty-note{ font-size:12px; color:var(--ink-soft); padding:14px; text-align:center; }
-  .letra-box{ font-size:12.5px; line-height:1.6; color:var(--ink-soft); padding:6px 0 14px; display:none; }
+  .empty-note{ font-size:13px; color:var(--ink-soft); padding:14px 0; }
+  .letra-box{ font-size:13px; line-height:1.65; color:var(--ink-soft); padding:6px 0 14px; display:none; max-width:640px; }
   .letra-box.open{ display:block; }
+
+  .historia-resumo{ font-size:14px; color:var(--ink-soft); line-height:1.65; margin-bottom:24px; max-width:640px; }
+  .historia-tag{
+    display:inline-block; font-size:11px; color:var(--gold); background:var(--gold-soft);
+    padding:4px 11px; border-radius:20px; margin-bottom:16px; font-weight:600;
+  }
+  .timeline{ position:relative; padding-left:20px; margin-bottom:30px; max-width:640px; }
+  .timeline::before{
+    content:""; position:absolute; left:4px; top:4px; bottom:4px; width:1px; background:var(--line);
+  }
+  .timeline-item{ position:relative; padding-bottom:18px; }
+  .timeline-item::before{
+    content:""; position:absolute; left:-20px; top:3px; width:9px; height:9px; border-radius:50%;
+    background:var(--green); border:2px solid var(--bg);
+  }
+  .timeline-year{ font-size:11.5px; color:var(--gold); font-weight:600; margin-bottom:3px; }
+  .timeline-text{ font-size:13.5px; line-height:1.55; }
+
+  @media (max-width:640px){
+    .site-nav{ padding:16px; }
+    .nav-links{ gap:18px; }
+    .site-main{ padding:0 16px 60px; }
+    .view{ padding-top:24px; }
+    .home-hero{ flex-direction:column; }
+    .stat-row{ flex-direction:row; }
+  }
 </style>
 </head>
 <body>
 
-<div class="device">
-  <div class="screen">
-    <div class="status-dot"></div>
+<nav class="site-nav hidden" id="site-nav">
+  <div class="brand"><span class="mark"></span>Umbanda</div>
+  <div class="nav-links">
+    <button class="nav-link active" data-view="home" onclick="showView('home')">Início</button>
+    <button class="nav-link" data-view="biblioteca" onclick="showView('biblioteca')">Guias</button>
+    <button class="nav-link" data-view="historia" onclick="showView('historia')">História</button>
+    <button class="nav-link" data-view="perfil" onclick="showView('perfil')">Perfil</button>
+  </div>
+</nav>
+
+<main class="site-main">
 
     <!-- ================= LOGIN ================= -->
     <section id="view-login" class="view login-view active">
-      <div>
+      <div class="login-box">
         <p class="eyebrow">Terreiro Digital</p>
         <h1>Umbanda</h1>
         <p class="desc">Guias, pontos cantados e orações,<br>sempre à mão.</p>
@@ -237,27 +271,29 @@
         <div class="icon-btn" onclick="onOpenNotifications()">•</div>
       </div>
 
-      <div class="guia-card">
-        <div class="ring"></div>
-        <div class="ring small"></div>
-        <p class="eyebrow" id="guia-do-dia-label">Guia do dia</p>
-        <h2 id="guia-do-dia-nome">Ogum</h2>
-        <p class="sub" id="guia-do-dia-info">Terça-feira · linha de guerreiro</p>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat">
-          <p class="num" id="stat-streak">12</p>
-          <p class="label">dias seguidos</p>
+      <div class="home-hero">
+        <div class="guia-card">
+          <div class="ring"></div>
+          <div class="ring small"></div>
+          <p class="eyebrow" id="guia-do-dia-label">Guia do dia</p>
+          <h2 id="guia-do-dia-nome">Ogum</h2>
+          <p class="sub" id="guia-do-dia-info">Terça-feira · linha de guerreiro</p>
         </div>
-        <div class="stat">
-          <p class="num" id="stat-ouvidos">6</p>
-          <p class="label">pontos ouvidos</p>
+
+        <div class="stat-row">
+          <div class="stat">
+            <p class="num" id="stat-streak">12</p>
+            <p class="label">dias<br>seguidos</p>
+          </div>
+          <div class="stat">
+            <p class="num" id="stat-ouvidos">6</p>
+            <p class="label">pontos<br>ouvidos</p>
+          </div>
         </div>
       </div>
 
       <p class="section-label">Sugestão de hoje</p>
-      <div id="home-suggestions">
+      <div id="home-suggestions" class="list-grid">
         <!-- Conteúdo abaixo é só placeholder visual — renderHomeSuggestions()
              substitui isso assim que os dados reais chegam do Supabase -->
         <div class="list-item" onclick="onOpenTrack('saudacao-ogum')">
@@ -276,12 +312,6 @@
           </div>
           <span class="chev">›</span>
         </div>
-      </div>
-
-      <div class="tabbar">
-        <button class="tab active" onclick="showView('home')"><span class="glyph"></span>Início</button>
-        <button class="tab" onclick="showView('biblioteca')"><span class="glyph"></span>Guias</button>
-        <button class="tab" onclick="showView('perfil')"><span class="glyph"></span>Perfil</button>
       </div>
     </section>
 
@@ -305,7 +335,7 @@
         <div class="filter" data-cat="itans" onclick="setBibliotecaCategoria('itans', this)">Itans</div>
       </div>
 
-      <div id="biblioteca-list" style="overflow-y:auto;">
+      <div id="biblioteca-list" class="list-grid">
         <!-- Placeholder visual — renderBibliotecaList() substitui isso assim
              que appState.guias é carregado do Supabase -->
         <div class="list-item" onclick="onOpenGuia('ogum')">
@@ -329,18 +359,37 @@
           <span class="chev">›</span>
         </div>
       </div>
+    </section>
 
-      <div class="tabbar">
-        <button class="tab" onclick="showView('home')"><span class="glyph"></span>Início</button>
-        <button class="tab active" onclick="showView('biblioteca')"><span class="glyph"></span>Guias</button>
-        <button class="tab" onclick="showView('perfil')"><span class="glyph"></span>Perfil</button>
+    <!-- ================= HISTÓRIA (raízes afro-diaspóricas) ================= -->
+    <section id="view-historia" class="view">
+      <div class="top-row">
+        <h3>Raízes afro-diaspóricas</h3>
+        <div class="icon-btn" onclick="onOpenSearch()">⌕</div>
       </div>
+      <p class="section-label">Culturas e nações que formam as tradições do app</p>
+      <div id="historia-list" class="list-grid">
+        <!-- renderHistoriaList() gera a partir de appState.culturas -->
+      </div>
+    </section>
+
+    <!-- ================= DETALHE DE UMA CULTURA ================= -->
+    <section id="view-cultura-detalhe" class="view">
+      <div class="back-row" onclick="showView('historia')">‹ Voltar</div>
+      <p class="historia-tag" id="cultura-regiao">—</p>
+      <h3 id="cultura-nome" style="margin-bottom:14px;">—</h3>
+      <p class="historia-resumo" id="cultura-resumo">—</p>
+      <p class="section-label">Linha do tempo</p>
+      <div class="timeline" id="cultura-timeline"></div>
+      <p class="section-label">Guias ligados a esta tradição</p>
+      <div id="cultura-guias-relacionados" class="list-grid"></div>
     </section>
 
     <!-- ================= PLAYER ================= -->
     <section id="view-player" class="view">
       <div class="back-row" onclick="showView('biblioteca')">‹ Voltar</div>
 
+      <div class="player-panel">
       <div class="art" id="player-art"><div class="ring"></div></div>
       <h3 class="track-title" id="player-title">Ponto cantado de Ogum</h3>
       <p class="track-sub" id="player-sub">Voz: Marcos e Ana</p>
@@ -378,6 +427,7 @@
 
       <!-- Elemento de áudio real, sem src ainda -->
       <audio id="audio-player" preload="none"></audio>
+      </div>
     </section>
 
     <!-- ================= PERFIL ================= -->
@@ -387,30 +437,25 @@
       </div>
       <div class="profile-header">
         <div class="avatar-circle" id="perfil-inicial">?</div>
-        <p class="profile-name" id="perfil-nome">—</p>
-        <p class="profile-email" id="perfil-email">—</p>
+        <div>
+          <p class="profile-name" id="perfil-nome">—</p>
+          <p class="profile-email" id="perfil-email">—</p>
+        </div>
       </div>
-      <div class="stat-row">
+      <div class="stat-row" style="flex-direction:row; max-width:360px; margin-bottom:20px;">
         <div class="stat">
           <p class="num" id="perfil-streak">0</p>
-          <p class="label">dias seguidos</p>
+          <p class="label">dias<br>seguidos</p>
         </div>
         <div class="stat">
           <p class="num" id="perfil-ouvidos">0</p>
-          <p class="label">pontos ouvidos</p>
+          <p class="label">pontos<br>ouvidos</p>
         </div>
       </div>
       <div class="signout-btn" onclick="onSignOut()">Sair da conta</div>
-
-      <div class="tabbar">
-        <button class="tab" onclick="showView('home')"><span class="glyph"></span>Início</button>
-        <button class="tab" onclick="showView('biblioteca')"><span class="glyph"></span>Guias</button>
-        <button class="tab active" onclick="showView('perfil')"><span class="glyph"></span>Perfil</button>
-      </div>
     </section>
 
-  </div>
-</div>
+</main>
 
 <script>
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -424,6 +469,8 @@
     user: null,               // sessão do Supabase Auth
     guias: [],                // todos os guias, carregados uma vez
     conteudos: [],             // todos os conteúdos, carregados uma vez
+    culturas: [],               // culturas afro-diaspóricas (tabela "culturas")
+    culturaAberta: null,        // slug da cultura em detalhe, ou null
     bibliotecaTradicao: "umbanda", // tradição ativa — ajustada pra primeira que existir, ao carregar
     bibliotecaCategoria: "orixas", // orixas | entidades | pontos | riscados | itans
     bibliotecaGuiaAberto: null, // slug do guia em detalhe, ou null pra lista geral
@@ -454,12 +501,13 @@
   function showView(name) {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     document.getElementById("view-" + name).classList.add("active");
-    document.querySelectorAll(".tabbar .tab").forEach(t => t.classList.remove("active"));
-    const activeBar = document.querySelector("#view-" + name + " .tabbar");
-    if (activeBar) {
-      const idx = { home: 0, biblioteca: 1, perfil: 2 }[name];
-      if (idx !== undefined) activeBar.children[idx].classList.add("active");
+    const navLink = document.querySelector('.nav-link[data-view="' + name + '"]');
+    if (navLink) {
+      document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+      navLink.classList.add("active");
     }
+    document.getElementById("site-nav").classList.toggle("hidden", name === "login");
+    window.scrollTo({ top: 0, behavior: "auto" });
   }
 
   /* ==========================================================
@@ -506,22 +554,79 @@
     renderTradicaoChips();
     atualizarLabelsAbas();
     renderBibliotecaList();
+    renderHistoriaList();
     showView("home");
   }
 
   /* ==========================================================
-     CATÁLOGO (guias + conteúdos) — carregado uma vez, é dado
-     público, não muda por usuário.
+     CATÁLOGO (guias + conteúdos + culturas) — carregado uma vez,
+     é dado público, não muda por usuário.
      ========================================================== */
   async function loadCatalogo() {
-    const [{ data: guias, error: errGuias }, { data: conteudos, error: errConteudos }] = await Promise.all([
+    const [{ data: guias, error: errGuias }, { data: conteudos, error: errConteudos }, { data: culturas, error: errCulturas }] = await Promise.all([
       supabaseClient.from("guias").select("*").eq("ativo", true).order("ordem"),
       supabaseClient.from("conteudos").select("*").eq("ativo", true).order("ordem"),
+      supabaseClient.from("culturas").select("*").eq("ativo", true).order("ordem"),
     ]);
     if (errGuias) console.error("Erro ao carregar guias:", errGuias);
     if (errConteudos) console.error("Erro ao carregar conteúdos:", errConteudos);
+    if (errCulturas) console.error("Erro ao carregar culturas:", errCulturas);
     appState.guias = guias || [];
     appState.conteudos = conteudos || [];
+    appState.culturas = culturas || [];
+  }
+
+  /* ==========================================================
+     HISTÓRIA — raízes afro-diaspóricas
+     ========================================================== */
+  function renderHistoriaList() {
+    const container = document.getElementById("historia-list");
+    if (!appState.culturas.length) {
+      container.innerHTML = `<p class="empty-note">Nenhuma cultura cadastrada ainda.</p>`;
+      return;
+    }
+    container.innerHTML = appState.culturas.map(c => `
+      <div class="list-item" onclick="onOpenCultura('${c.slug}')">
+        <div class="dot">${escapeHtml(c.nome.charAt(0))}</div>
+        <div class="meta">
+          <p class="title">${escapeHtml(c.nome)}</p>
+          <p class="sub">${escapeHtml(c.regiao_origem || "")}</p>
+        </div>
+        <span class="chev">›</span>
+      </div>`).join("");
+  }
+
+  function onOpenCultura(slug) {
+    appState.culturaAberta = slug;
+    renderCulturaDetalhe(slug);
+    showView("cultura-detalhe");
+  }
+
+  function renderCulturaDetalhe(slug) {
+    const cultura = appState.culturas.find(c => c.slug === slug);
+    if (!cultura) return;
+
+    document.getElementById("cultura-regiao").textContent = cultura.regiao_origem || "";
+    document.getElementById("cultura-nome").textContent = cultura.nome;
+    document.getElementById("cultura-resumo").textContent = cultura.resumo || "";
+
+    const marcos = Array.isArray(cultura.marcos) ? cultura.marcos : [];
+    document.getElementById("cultura-timeline").innerHTML = marcos.map(m => `
+      <div class="timeline-item">
+        <p class="timeline-year">${escapeHtml(m.ano || "")}</p>
+        <p class="timeline-text">${escapeHtml(m.texto || "")}</p>
+      </div>`).join("") || `<p class="empty-note">Sem marcos cadastrados ainda.</p>`;
+
+    const guiasRelacionados = appState.guias.filter(g => g.origem_cultural_id === cultura.id);
+    const guiasContainer = document.getElementById("cultura-guias-relacionados");
+    guiasContainer.innerHTML = guiasRelacionados.length
+      ? guiasRelacionados.map(g => `
+        <div class="list-item" onclick="onOpenGuia('${g.slug}')">
+          <div class="dot">${escapeHtml(g.nome.charAt(0))}</div>
+          <div class="meta"><p class="title">${escapeHtml(g.nome)}</p><p class="sub">${TRADICAO_NOME[g.tradicao] || g.tradicao}</p></div>
+          <span class="chev">›</span>
+        </div>`).join("")
+      : `<p class="empty-note">Nenhum guia catalogado ainda para esta tradição.</p>`;
   }
 
   /* ==========================================================
