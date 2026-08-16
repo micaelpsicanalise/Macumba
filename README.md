@@ -1,9 +1,12 @@
-# Handoff Jogo de Búzios (Terreiro Digital / Umbanda)
+# Handoff Jogo de Búzios (Terreiro Digital / Macumba)
 
 Contexto pra quem está entrando no meio: o Micael pediu um jogo de búzios pra
-colocar no repo `micaelpsicanalise/Umbanda`. Este documento resume o que foi
-feito, como as peças se conectam, e o que ainda falta — pra você (outra
-instância do Claude) não duplicar trabalho nem quebrar o que já existe.
+colocar no repo `micaelpsicanalise/Macumba` (renomeado de `Umbanda` em
+agosto/2026 — o projeto virou um compêndio mais amplo de hierofania, não só
+Umbanda; ver seção **Rebranding e fusão com "raízes"** no fim deste
+documento). Este documento resume o que foi feito, como as peças se
+conectam, e o que ainda falta — pra você (outra instância do Claude) não
+duplicar trabalho nem quebrar o que já existe.
 
 ## Arquivos entregues
 
@@ -14,9 +17,10 @@ instância do Claude) não duplicar trabalho nem quebrar o que já existe.
 | `supabase-buzios-schema.sql` | Cria a tabela `buzios_leituras` + RLS | **Ainda não rodado** no Supabase |
 | `index.html` | Landing page, com nova seção `#buzios` de destaque + link no menu | Funcional |
 
-Não mexi em `app-umbanda.html` nem em nenhuma outra parte do admin
-(Guias/Conteúdos, upload de áudio via Worker) além de acrescentar a aba nova —
-tudo que já existia continua igual.
+Não mexi em nenhuma outra parte do admin (Guias/Conteúdos, upload de áudio
+via Worker) além de acrescentar a aba nova — tudo que já existia continua
+igual. (`app-umbanda.html`, um protótipo órfão sem link no site, foi
+removido do repo em agosto/2026 — ver seção final.)
 
 ## Como funciona, de ponta a ponta
 
@@ -115,3 +119,41 @@ de admin no JS do painel não protege o banco por si só).
   Ifá/Nagô nem Angola) — isso varia entre casas e terreiros, então deixei a
   leitura genérica + admin editável em vez de inventar conteúdo doutrinário
   que poderia estar errado pra tradição do Micael.
+
+## Rebranding e fusão com "raízes" (agosto/2026)
+
+O projeto deixou de ser só sobre Umbanda: o Micael entende "hierofania"
+(manifestação do sagrado através da matéria) como o eixo real do projeto,
+cobrindo tanto tradições afro-diaspóricas quanto outras raízes que fazem
+algo parecido (ex.: mongóis, ainu, aborígenes australianos). A partir disso:
+
+- **Repo renomeado** de `micaelpsicanalise/Umbanda` para
+  `micaelpsicanalise/Macumba` (o GitHub redireciona a URL antiga
+  automaticamente). Descrição do repo também atualizada.
+- **Branding trocado** de "Umbanda" pra "Macumba" em `index.html`,
+  `app/index.html` e `admin/index.html` (títulos, meta tags, marca no nav) —
+  mas **"Umbanda" continua existindo como uma das tradições dentro do
+  compêndio** (ver `TRADICAO_NOME` em `app/index.html`), não foi apagada de
+  lugar nenhum como conteúdo.
+- **Página História fundida com o protótipo "raízes"**: existia um outro
+  repo/protótipo chamado `raizes`, com um mapa mundi em SVG (culturas por
+  continente + rotas de migração entre elas) e um campo `continente` na
+  tabela `culturas` que o app do Macumba ainda não usava. Trouxe essa peça
+  pra `app/index.html`:
+  - `loadCatalogo()` agora também busca `culturas_migracoes`.
+  - A view História tem toggle **Lista / Mapa** e filtro por continente.
+  - No modo Lista, as culturas aparecem em dois blocos: **Culturas
+    afro-diaspóricas** (`continente = 'africa'`) e **Outras raízes** (tudo
+    o resto). Não criei coluna nova pra isso — reaproveitei o `continente`
+    que a tabela `culturas` já tinha (populado quando o raízes foi criado).
+  - O repo `raizes` em si **ficou intocado** por decisão explícita do
+    Micael — ele ainda existe separado, só a peça de UI/lógica foi copiada
+    pro Macumba, não removida de lá.
+- **`app-umbanda.html`** (protótipo antigo na raiz do repo, sem link em
+  nenhuma página do site — o site usa `app/index.html`) foi **deletado**.
+- **Pendente, não resolvido ainda**: `AUDIO_WORKER_URL` em `admin/index.html`
+  ainda aponta pro Cloudflare Worker `umbanda-audio-upload.micaelpsicanalise.workers.dev`.
+  Renomear um Worker não é possível diretamente — é preciso criar um Worker
+  novo (`macumba-audio-upload`, por exemplo), publicar o mesmo código nele,
+  atualizar essa constante pra apontar pro novo endpoint, testar, e só depois
+  apagar o Worker antigo.
