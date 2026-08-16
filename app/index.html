@@ -227,6 +227,9 @@
   .timeline-year{ font-size:11.5px; color:var(--gold); font-weight:600; margin-bottom:3px; }
   .timeline-text{ font-size:13.5px; line-height:1.55; }
 
+  #historia-mapa svg .node rect{ transition:stroke .15s ease; }
+  #historia-mapa svg .node:hover rect{ stroke:var(--green); }
+
   @media (max-width:640px){
     .site-nav{ padding:16px; }
     .nav-links{ gap:18px; }
@@ -362,15 +365,34 @@
       </div>
     </section>
 
-    <!-- ================= HISTÓRIA (raízes afro-diaspóricas) ================= -->
+    <!-- ================= HISTÓRIA (raízes afro-diaspóricas + outras raízes) ================= -->
     <section id="view-historia" class="view">
       <div class="top-row">
-        <h3>Raízes afro-diaspóricas</h3>
-        <div class="icon-btn" onclick="onOpenSearch()">⌕</div>
+        <h3>Raízes</h3>
+        <div class="filters" style="margin:0;">
+          <div class="filter active" id="historia-modo-lista" onclick="setHistoriaModo('lista')">Lista</div>
+          <div class="filter" id="historia-modo-mapa" onclick="setHistoriaModo('mapa')">Mapa</div>
+        </div>
       </div>
       <p class="section-label">Culturas e nações que formam as tradições do app</p>
-      <div id="historia-list" class="list-grid">
-        <!-- renderHistoriaList() gera a partir de appState.culturas -->
+
+      <div id="historia-list-wrap">
+        <div class="filters" id="historia-continente-filters"></div>
+
+        <p class="section-label" style="margin-top:8px;">Culturas afro-diaspóricas</p>
+        <div id="historia-list-afro" class="list-grid">
+          <!-- renderHistoriaList() gera a partir de appState.culturas (continente === africa) -->
+        </div>
+
+        <p class="section-label" style="margin-top:28px;">Outras raízes</p>
+        <div id="historia-list-outras" class="list-grid">
+          <!-- renderHistoriaList() gera a partir de appState.culturas (continente !== africa) -->
+        </div>
+      </div>
+
+      <div id="historia-mapa-wrap" style="display:none;">
+        <div id="historia-mapa"></div>
+        <p class="historia-resumo" style="margin-top:12px;">Tracejado = rotas históricas de migração e transmissão cultural. Toque numa região pra ver as culturas cadastradas nela.</p>
       </div>
     </section>
 
@@ -470,8 +492,11 @@
     user: null,               // sessão do Supabase Auth
     guias: [],                // todos os guias, carregados uma vez
     conteudos: [],             // todos os conteúdos, carregados uma vez
-    culturas: [],               // culturas afro-diaspóricas (tabela "culturas")
+    culturas: [],               // todas as culturas cadastradas (tabela "culturas") — afro e outras raízes
+    migracoes: [],               // rotas de migração/transmissão entre continentes (tabela "culturas_migracoes")
     culturaAberta: null,        // slug da cultura em detalhe, ou null
+    historiaModo: "lista",        // lista | mapa
+    historiaContinente: "todos",  // filtro de continente na lista
     bibliotecaTradicao: "umbanda", // tradição ativa — ajustada pra primeira que existir, ao carregar
     bibliotecaCategoria: "orixas", // orixas | entidades | pontos | riscados | itans
     bibliotecaGuiaAberto: null, // slug do guia em detalhe, ou null pra lista geral
@@ -564,29 +589,77 @@
      é dado público, não muda por usuário.
      ========================================================== */
   async function loadCatalogo() {
-    const [{ data: guias, error: errGuias }, { data: conteudos, error: errConteudos }, { data: culturas, error: errCulturas }] = await Promise.all([
+    const [{ data: guias, error: errGuias }, { data: conteudos, error: errConteudos }, { data: culturas, error: errCulturas }, { data: migracoes, error: errMigracoes }] = await Promise.all([
       supabaseClient.from("guias").select("*").eq("ativo", true).order("ordem"),
       supabaseClient.from("conteudos").select("*").eq("ativo", true).order("ordem"),
       supabaseClient.from("culturas").select("*").eq("ativo", true).order("ordem"),
+      supabaseClient.from("culturas_migracoes").select("*").eq("ativo", true).order("ordem"),
     ]);
     if (errGuias) console.error("Erro ao carregar guias:", errGuias);
     if (errConteudos) console.error("Erro ao carregar conteúdos:", errConteudos);
     if (errCulturas) console.error("Erro ao carregar culturas:", errCulturas);
+    if (errMigracoes) console.error("Erro ao carregar migrações:", errMigracoes);
     appState.guias = guias || [];
     appState.conteudos = conteudos || [];
     appState.culturas = culturas || [];
+    appState.migracoes = migracoes || [];
   }
 
   /* ==========================================================
-     HISTÓRIA — raízes afro-diaspóricas
+     HISTÓRIA — raízes afro-diaspóricas e outras raízes de hierofania
      ========================================================== */
-  function renderHistoriaList() {
-    const container = document.getElementById("historia-list");
-    if (!appState.culturas.length) {
-      container.innerHTML = `<p class="empty-note">Nenhuma cultura cadastrada ainda.</p>`;
-      return;
-    }
-    container.innerHTML = appState.culturas.map(c => `
+  const CONTINENTE_NOME = {
+    "america-norte": "América do Norte",
+    "america-central-caribe": "América Central e Caribe",
+    "america-sul": "América do Sul",
+    "europa": "Europa",
+    "africa": "África",
+    "oriente-medio": "Oriente Médio",
+    "siberia": "Sibéria",
+    "asia": "Ásia",
+    "oceania": "Oceania",
+  };
+
+  // posições fixas das 9 regiões no mapa esquemático (viewBox 680x460)
+  const MAPA_ZONAS = {
+    "america-norte":          { nome: "América do Norte",          x: 40,  y: 60,  w: 150, h: 110 },
+    "america-central-caribe": { nome: "América Central e Caribe",  x: 40,  y: 190, w: 150, h: 100 },
+    "america-sul":            { nome: "América do Sul",            x: 40,  y: 310, w: 150, h: 110 },
+    "europa":                 { nome: "Europa",                    x: 270, y: 60,  w: 150, h: 110 },
+    "africa":                 { nome: "África",                    x: 270, y: 190, w: 150, h: 130 },
+    "oriente-medio":          { nome: "Oriente Médio",             x: 270, y: 340, w: 150, h: 80  },
+    "siberia":                { nome: "Sibéria",                   x: 470, y: 60,  w: 150, h: 100 },
+    "asia":                   { nome: "Ásia",                      x: 470, y: 180, w: 150, h: 110 },
+    "oceania":                { nome: "Oceania",                   x: 470, y: 310, w: 150, h: 100 },
+  };
+
+  function setHistoriaModo(modo) {
+    appState.historiaModo = modo;
+    document.getElementById("historia-modo-lista").classList.toggle("active", modo === "lista");
+    document.getElementById("historia-modo-mapa").classList.toggle("active", modo === "mapa");
+    document.getElementById("historia-list-wrap").style.display = modo === "lista" ? "block" : "none";
+    document.getElementById("historia-mapa-wrap").style.display = modo === "mapa" ? "block" : "none";
+    if (modo === "mapa") renderMapaMundial();
+  }
+
+  function setHistoriaContinente(continente) {
+    appState.historiaContinente = continente;
+    document.querySelectorAll("#historia-continente-filters .filter").forEach(f => {
+      f.classList.toggle("active", f.dataset.cont === continente);
+    });
+    renderHistoriaList();
+  }
+
+  function renderHistoriaContinenteFilters() {
+    const presentes = [...new Set(appState.culturas.map(c => c.continente).filter(Boolean))];
+    const container = document.getElementById("historia-continente-filters");
+    const chips = [`<div class="filter${appState.historiaContinente === "todos" ? " active" : ""}" data-cont="todos" onclick="setHistoriaContinente('todos')">Todos</div>`]
+      .concat(presentes.map(cont => `<div class="filter${appState.historiaContinente === cont ? " active" : ""}" data-cont="${cont}" onclick="setHistoriaContinente('${cont}')">${CONTINENTE_NOME[cont] || cont}</div>`));
+    container.innerHTML = chips.join("");
+  }
+
+  function itemCultura(c) {
+    return `
       <div class="list-item" onclick="onOpenCultura('${c.slug}')">
         <div class="dot">${escapeHtml(c.nome.charAt(0))}</div>
         <div class="meta">
@@ -594,7 +667,73 @@
           <p class="sub">${escapeHtml(c.regiao_origem || "")}</p>
         </div>
         <span class="chev">›</span>
-      </div>`).join("");
+      </div>`;
+  }
+
+  // Divide a lista (já filtrada por continente, se houver filtro ativo) em
+  // dois blocos: África (raízes afro-diaspóricas) e o restante (outras
+  // raízes que também usam matéria pra manifestar o sagrado — hierofania,
+  // fora do eixo afro: mongóis, ainu, aborígenes australianos etc.).
+  function renderHistoriaList() {
+    renderHistoriaContinenteFilters();
+    const base = appState.historiaContinente === "todos"
+      ? appState.culturas
+      : appState.culturas.filter(c => c.continente === appState.historiaContinente);
+
+    const afro = base.filter(c => c.continente === "africa");
+    const outras = base.filter(c => c.continente !== "africa");
+
+    const containerAfro = document.getElementById("historia-list-afro");
+    const containerOutras = document.getElementById("historia-list-outras");
+
+    containerAfro.innerHTML = afro.length
+      ? afro.map(itemCultura).join("")
+      : `<p class="empty-note">Nenhuma cultura cadastrada ainda.</p>`;
+
+    containerOutras.innerHTML = outras.length
+      ? outras.map(itemCultura).join("")
+      : `<p class="empty-note">Nenhuma cultura cadastrada ainda.</p>`;
+  }
+
+  function renderMapaMundial() {
+    const container = document.getElementById("historia-mapa");
+    const boxesHtml = Object.entries(MAPA_ZONAS).map(([cont, zona]) => {
+      const count = appState.culturas.filter(c => c.continente === cont).length;
+      return `
+        <g class="node" onclick="onAbrirZonaMapa('${cont}')" style="cursor:pointer;">
+          <rect x="${zona.x}" y="${zona.y}" width="${zona.w}" height="${zona.h}" rx="10"
+                fill="var(--card)" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="${zona.x + 12}" y="${zona.y + 24}" font-family="Fraunces, serif" font-size="14" fill="var(--ink)">${escapeHtml(zona.nome)}</text>
+          <text x="${zona.x + 12}" y="${zona.y + 44}" font-family="Inter, sans-serif" font-size="11.5" fill="var(--ink-soft)">${count} cultura${count === 1 ? "" : "s"} cadastrada${count === 1 ? "" : "s"}</text>
+        </g>`;
+    }).join("");
+
+    const arrowsHtml = appState.migracoes.map(m => {
+      const de = MAPA_ZONAS[m.continente_origem];
+      const para = MAPA_ZONAS[m.continente_destino];
+      if (!de || !para) return "";
+      const x1 = de.x + de.w / 2, y1 = de.y + de.h / 2;
+      const x2 = para.x + para.w / 2, y2 = para.y + para.h / 2;
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - 40;
+      return `<path d="M${x1},${y1} Q${mx},${my} ${x2},${y2}" fill="none" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.6" marker-end="url(#seta-migracao)"/>`;
+    }).join("");
+
+    container.innerHTML = `
+      <svg width="100%" viewBox="0 0 680 460" role="img" style="overflow:visible;">
+        <title>Mapa de raízes e hierofania</title>
+        <defs>
+          <marker id="seta-migracao" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        ${arrowsHtml}
+        ${boxesHtml}
+      </svg>`;
+  }
+
+  function onAbrirZonaMapa(continente) {
+    setHistoriaModo("lista");
+    setHistoriaContinente(continente);
   }
 
   function onOpenCultura(slug) {
