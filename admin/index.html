@@ -292,12 +292,35 @@
             </div>
             <div class="checkbox-row" style="margin-top:32px;">
               <input type="checkbox" id="cultura-raiz-africana">
-              <label style="margin:0;">Raiz africana (linhagem/ancestralidade — usado na página História, independente do continente)</label>
+              <label style="margin:0;">Raiz africana. Marcação manual provisória, só use se ainda não cadastrou a linhagem exata abaixo (linhagem tem prioridade)</label>
             </div>
           </div>
           <div style="margin-top:16px; display:flex; gap:10px;">
             <button class="btn btn-primary" onclick="saveCultura()">Salvar cultura</button>
             <button class="btn" onclick="resetCulturaForm()">Nova cultura</button>
+          </div>
+        </div>
+
+        <div class="card" id="linhagem-card">
+          <h2>Linhagem</h2>
+          <p class="muted" id="linhagem-sem-cultura">Salve ou selecione uma cultura acima pra cadastrar de onde ela vem.</p>
+          <div id="linhagem-conteudo" style="display:none;">
+            <p class="muted" style="margin-bottom:10px;">De onde <strong id="linhagem-cultura-nome"></strong> vem. Pode ter mais de uma origem.</p>
+            <table>
+              <thead><tr><th>Origem</th><th>Rota</th><th></th></tr></thead>
+              <tbody id="linhagem-table"></tbody>
+            </table>
+            <div class="row" style="margin-top:14px;">
+              <div>
+                <label>Cultura de origem</label>
+                <select id="linhagem-origem-select"></select>
+              </div>
+              <div>
+                <label>Rota (como chegou até aqui)</label>
+                <input type="text" id="linhagem-rota" placeholder="Trazida via tráfico negreiro, séc. XVIII, reconfigurada na Bahia">
+              </div>
+            </div>
+            <button class="btn btn-sm" style="margin-top:10px;" onclick="addLinhagem()">Adicionar origem</button>
           </div>
         </div>
 
@@ -418,14 +441,14 @@
 
 <script>
   // ==========================================================
-  // CONFIG — mesmos valores usados no app-umbanda.html
+  // CONFIG — mesmos valores usados no app (app/index.html)
   // ==========================================================
   const SUPABASE_URL = "https://aewcxqzpbipwcdpsjfht.supabase.co";
   const SUPABASE_KEY = "sb_publishable_mINpOQLVbi0pilHc9bEtBA_l1a0o6c6";
   const ADMIN_UUID   = "af619e44-1049-4ebd-86b4-4b4fa3bce94b";
 
-  // Preencher depois de criar o Worker (ver worker-audio-upload.js) —
-  // formato: https://umbanda-audio-upload.<seu-subdominio>.workers.dev
+  // Preencher depois de criar o Worker (ver worker-audio-upload.js).
+  // Formato: https://umbanda-audio-upload.<seu-subdominio>.workers.dev
   const AUDIO_WORKER_URL = "https://umbanda-audio-upload.micaelpsicanalise.workers.dev";
 
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -435,6 +458,7 @@
   let compostosCache = [];
   let conteudosCache = [];
   let culturasCache = [];
+  let linhagensCache = [];
   let pendingAudioFile = null;
   let pendingImagemFile = null;
   let pendingRiscadoFile = null;
@@ -810,6 +834,9 @@
     const { data, error } = await supabaseClient.from("culturas").select("*").order("ordem");
     if (error) { console.error(error); return; }
     culturasCache = data || [];
+    const { data: linhagens, error: errLinhagem } = await supabaseClient.from("culturas_linhagem").select("*").order("ordem");
+    if (errLinhagem) console.error(errLinhagem);
+    linhagensCache = linhagens || [];
     renderCulturasTable();
     renderOrigemCulturalSelect();
   }
@@ -858,6 +885,7 @@
     document.getElementById("cultura-continente").value = c.continente || "";
     document.getElementById("cultura-raiz-africana").checked = !!c.raiz_africana;
     document.getElementById("cultura-form-title").textContent = "Editar cultura";
+    renderLinhagemBloco(c.id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -874,6 +902,7 @@
     document.getElementById("cultura-continente").value = "";
     document.getElementById("cultura-raiz-africana").checked = false;
     document.getElementById("cultura-form-title").textContent = "Nova cultura";
+    renderLinhagemBloco(null);
   }
 
   async function saveCultura() {
@@ -901,6 +930,67 @@
     resetCulturaForm();
     await loadCulturas();
     await loadGuias();
+  }
+
+  function renderLinhagemBloco(culturaId) {
+    const semCultura = document.getElementById("linhagem-sem-cultura");
+    const conteudo = document.getElementById("linhagem-conteudo");
+    if (!culturaId) {
+      semCultura.style.display = "block";
+      conteudo.style.display = "none";
+      return;
+    }
+    const cultura = culturasCache.find(c => c.id === culturaId);
+    if (!cultura) return;
+
+    semCultura.style.display = "none";
+    conteudo.style.display = "block";
+    document.getElementById("linhagem-cultura-nome").textContent = cultura.nome;
+
+    const select = document.getElementById("linhagem-origem-select");
+    select.innerHTML = culturasCache
+      .filter(c => c.id !== culturaId)
+      .map(c => `<option value="${c.id}">${escapeHtml(c.nome)}</option>`).join("");
+
+    const linhas = linhagensCache.filter(l => l.cultura_id === culturaId);
+    const tbody = document.getElementById("linhagem-table");
+    tbody.innerHTML = linhas.length
+      ? linhas.map(l => {
+          const origem = culturasCache.find(c => c.id === l.origem_id);
+          return `
+            <tr>
+              <td>${origem ? escapeHtml(origem.nome) : "(cultura removida)"}</td>
+              <td>${escapeHtml(l.rota || "")}</td>
+              <td><button class="btn btn-sm" onclick="removerLinhagem('${l.id}')">Remover</button></td>
+            </tr>`;
+        }).join("")
+      : `<tr><td colspan="3" class="muted">Nenhuma origem cadastrada ainda.</td></tr>`;
+  }
+
+  async function addLinhagem() {
+    const culturaId = document.getElementById("cultura-id").value;
+    const origemId = document.getElementById("linhagem-origem-select").value;
+    const rota = document.getElementById("linhagem-rota").value.trim() || null;
+    if (!culturaId || !origemId) { alert("Falta selecionar a cultura de origem."); return; }
+    if (culturaId === origemId) { alert("Uma cultura não pode ser origem dela mesma."); return; }
+    const { error } = await supabaseClient.from("culturas_linhagem").insert({
+      cultura_id: culturaId,
+      origem_id: origemId,
+      rota,
+      ordem: linhagensCache.filter(l => l.cultura_id === culturaId).length,
+    });
+    if (error) { alert("Erro: " + error.message); return; }
+    document.getElementById("linhagem-rota").value = "";
+    await loadCulturas();
+    renderLinhagemBloco(culturaId);
+  }
+
+  async function removerLinhagem(id) {
+    const culturaId = document.getElementById("cultura-id").value;
+    const { error } = await supabaseClient.from("culturas_linhagem").delete().eq("id", id);
+    if (error) { alert("Erro: " + error.message); return; }
+    await loadCulturas();
+    renderLinhagemBloco(culturaId);
   }
 
   /* ---------------- BÚZIOS: ODUS PRIMÁRIOS ---------------- */

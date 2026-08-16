@@ -245,6 +245,16 @@
   #historia-mapa svg .node rect{ transition:stroke .15s ease; }
   #historia-mapa svg .node:hover rect{ stroke:var(--green); }
 
+  .linhagem-item{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .linhagem-item:last-child{ border-bottom:none; }
+  .linhagem-item .arrow{ color:var(--gold); font-size:14px; margin-top:2px; flex-shrink:0; }
+  .linhagem-item .nome{ font-size:13.5px; font-weight:500; cursor:pointer; }
+  .linhagem-item .nome:hover{ text-decoration:underline; }
+  .linhagem-item .rota{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+
   @media (max-width:640px){
     .site-nav{ padding:16px; }
     .nav-links{ gap:18px; }
@@ -418,6 +428,12 @@
       <p class="historia-tag" id="cultura-regiao">—</p>
       <h3 id="cultura-nome" style="margin-bottom:14px;">—</h3>
       <p class="historia-resumo" id="cultura-resumo">—</p>
+
+      <div id="cultura-linhagem-wrap" style="display:none;">
+        <p class="section-label">Linhagem</p>
+        <div id="cultura-linhagem" style="margin-bottom:24px;"></div>
+      </div>
+
       <p class="section-label">Linha do tempo</p>
       <div class="timeline" id="cultura-timeline"></div>
       <p class="section-label">Guias ligados a esta tradição</p>
@@ -510,6 +526,7 @@
     conteudos: [],             // todos os conteúdos, carregados uma vez
     culturas: [],               // todas as culturas cadastradas (tabela "culturas") — afro e outras raízes
     migracoes: [],               // rotas de migração/transmissão entre continentes (tabela "culturas_migracoes")
+    linhagens: [],                // de qual cultura cada cultura vem (tabela "culturas_linhagem") — usado pra classificar afro-diaspórica de verdade
     culturaAberta: null,        // slug da cultura em detalhe, ou null
     historiaModo: "lista",        // lista | mapa
     historiaContinente: "todos",  // filtro de continente na lista
@@ -605,20 +622,23 @@
      é dado público, não muda por usuário.
      ========================================================== */
   async function loadCatalogo() {
-    const [{ data: guias, error: errGuias }, { data: conteudos, error: errConteudos }, { data: culturas, error: errCulturas }, { data: migracoes, error: errMigracoes }] = await Promise.all([
+    const [{ data: guias, error: errGuias }, { data: conteudos, error: errConteudos }, { data: culturas, error: errCulturas }, { data: migracoes, error: errMigracoes }, { data: linhagens, error: errLinhagens }] = await Promise.all([
       supabaseClient.from("guias").select("*").eq("ativo", true).order("ordem"),
       supabaseClient.from("conteudos").select("*").eq("ativo", true).order("ordem"),
       supabaseClient.from("culturas").select("*").eq("ativo", true).order("ordem"),
       supabaseClient.from("culturas_migracoes").select("*").eq("ativo", true).order("ordem"),
+      supabaseClient.from("culturas_linhagem").select("*").eq("ativo", true).order("ordem"),
     ]);
     if (errGuias) console.error("Erro ao carregar guias:", errGuias);
     if (errConteudos) console.error("Erro ao carregar conteúdos:", errConteudos);
     if (errCulturas) console.error("Erro ao carregar culturas:", errCulturas);
     if (errMigracoes) console.error("Erro ao carregar migrações:", errMigracoes);
+    if (errLinhagens) console.error("Erro ao carregar linhagens:", errLinhagens);
     appState.guias = guias || [];
     appState.conteudos = conteudos || [];
     appState.culturas = culturas || [];
     appState.migracoes = migracoes || [];
+    appState.linhagens = linhagens || [];
   }
 
   /* ==========================================================
@@ -694,22 +714,45 @@
       </div>`;
   }
 
+  // Uma cultura é afro-diaspórica se ELA está na África, se algum
+  // ancestral dela (subindo a cadeia de culturas_linhagem) está, ou
+  // se foi marcada manualmente (`raiz_africana`) como fallback pra
+  // quando a linhagem exata ainda não foi cadastrada. Isso é de
+  // propósito mais trabalhoso que checar um campo só: a ideia é
+  // que a classificação venha de linhagem rastreável de verdade
+  // (cultura a cultura, com rota documentada em culturas_linhagem),
+  // não de um rótulo genérico — ver seção V do manifesto do projeto.
+  function culturaEhAfroDiasporica(cultura, visitados) {
+    visitados = visitados || new Set();
+    if (visitados.has(cultura.id)) return false; // guarda contra ciclo acidental na linhagem
+    visitados.add(cultura.id);
+
+    if (cultura.continente === "africa") return true;
+    if (cultura.raiz_africana) return true;
+
+    const origensIds = appState.linhagens
+      .filter(l => l.cultura_id === cultura.id)
+      .map(l => l.origem_id);
+    for (const origemId of origensIds) {
+      const origem = appState.culturas.find(c => c.id === origemId);
+      if (origem && culturaEhAfroDiasporica(origem, visitados)) return true;
+    }
+    return false;
+  }
+
   // Divide a lista (já filtrada por continente, se houver filtro ativo) em
-  // dois blocos: África (raízes afro-diaspóricas) e o restante (outras
-  // raízes que também usam matéria pra manifestar o sagrado — hierofania,
-  // fora do eixo afro: mongóis, ainu, aborígenes australianos etc.).
-  //
-  // A separação usa `raiz_africana` (linhagem/ancestralidade), NÃO
-  // `continente` (que é geográfico) — Candomblé, Umbanda, Vodum e
-  // Santería têm raiz africana mesmo formadas nas Américas.
+  // dois blocos: raízes afro-diaspóricas (calculado via culturaEhAfroDiasporica)
+  // e o restante (outras raízes que também usam matéria pra manifestar o
+  // sagrado — hierofania, fora do eixo afro: mongóis, ainu, aborígenes
+  // australianos etc.).
   function renderHistoriaList() {
     renderHistoriaContinenteFilters();
     const base = appState.historiaContinente === "todos"
       ? appState.culturas
       : appState.culturas.filter(c => c.continente === appState.historiaContinente);
 
-    const afro = base.filter(c => c.raiz_africana);
-    const outras = base.filter(c => !c.raiz_africana);
+    const afro = base.filter(c => culturaEhAfroDiasporica(c));
+    const outras = base.filter(c => !culturaEhAfroDiasporica(c));
 
     const containerAfro = document.getElementById("historia-list-afro");
     const containerOutras = document.getElementById("historia-list-outras");
@@ -722,6 +765,7 @@
       ? outras.map(itemCultura).join("")
       : `<p class="empty-note">Nenhuma cultura cadastrada ainda.</p>`;
   }
+
 
   function renderMapaMundial() {
     const container = document.getElementById("historia-mapa");
@@ -787,6 +831,25 @@
     document.getElementById("cultura-regiao").textContent = cultura.regiao_origem || "";
     document.getElementById("cultura-nome").textContent = cultura.nome;
     document.getElementById("cultura-resumo").textContent = cultura.resumo || "";
+
+    const linhagemWrap = document.getElementById("cultura-linhagem-wrap");
+    const origensDaCultura = appState.linhagens
+      .filter(l => l.cultura_id === cultura.id)
+      .map(l => ({ origem: appState.culturas.find(c => c.id === l.origem_id), rota: l.rota }))
+      .filter(x => x.origem);
+    if (origensDaCultura.length) {
+      linhagemWrap.style.display = "block";
+      document.getElementById("cultura-linhagem").innerHTML = origensDaCultura.map(x => `
+        <div class="linhagem-item">
+          <span class="arrow">↳</span>
+          <div>
+            <p class="nome" onclick="onOpenCultura('${x.origem.slug}')">${escapeHtml(x.origem.nome)}</p>
+            ${x.rota ? `<p class="rota">${escapeHtml(x.rota)}</p>` : ""}
+          </div>
+        </div>`).join("");
+    } else {
+      linhagemWrap.style.display = "none";
+    }
 
     const marcos = Array.isArray(cultura.marcos) ? cultura.marcos : [];
     document.getElementById("cultura-timeline").innerHTML = marcos.map(m => `
