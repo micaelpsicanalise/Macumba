@@ -147,6 +147,19 @@
 
   .back-row{ display:flex; align-items:center; gap:6px; margin-bottom:20px; color:var(--ink-soft); font-size:13px; cursor:pointer; }
   .back-row:hover{ color:var(--ink); }
+  .historia-card{
+    background:var(--bg-warm); border:1px solid var(--line); border-radius:16px;
+    padding:18px 20px; margin-bottom:18px;
+  }
+  .historia-card .eyebrow{ margin-bottom:8px; }
+  .historia-texto{
+    font-size:13.5px; line-height:1.6; color:var(--ink);
+    max-height:4.8em; overflow:hidden;
+  }
+  .historia-texto.open{ max-height:none; }
+  .historia-toggle{
+    margin-top:8px; font-size:12.5px; color:var(--gold); cursor:pointer; font-weight:600;
+  }
 
   /* ---------------- Player — bloco focado, mas dentro da página normal ---------------- */
   .player-panel{ max-width:440px; }
@@ -339,6 +352,7 @@
         <div class="filter" data-cat="pontos" onclick="setBibliotecaCategoria('pontos', this)">Pontos Cantados</div>
         <div class="filter" data-cat="riscados" onclick="setBibliotecaCategoria('riscados', this)">Pontos Riscados</div>
         <div class="filter" data-cat="itans" onclick="setBibliotecaCategoria('itans', this)">Itans</div>
+        <div class="filter" data-cat="comidas" onclick="setBibliotecaCategoria('comidas', this)">Comidas</div>
       </div>
 
       <div id="biblioteca-list" class="list-grid">
@@ -911,6 +925,16 @@
       const guia = appState.guias.find(g => g.slug === appState.bibliotecaGuiaAberto);
       const conteudos = appState.conteudos.filter(c => c.guia_id === guia.id);
       let html = `<div class="back-row" onclick="fecharDetalheGuia()">‹ Voltar</div>`;
+      // Camada "história": biografia longa do guia (origem, arquétipo, características),
+      // separada dos Itans avulsos (que ficam na lista de conteúdos abaixo, tipo "conto").
+      if (guia.historia) {
+        html += `
+          <div class="historia-card" id="guia-historia-card">
+            <p class="eyebrow">História</p>
+            <div class="historia-texto" id="guia-historia-texto">${escapeHtml(guia.historia).replace(/\n/g, "<br>")}</div>
+            <div class="historia-toggle" onclick="document.getElementById('guia-historia-texto').classList.toggle('open'); this.textContent = document.getElementById('guia-historia-texto').classList.contains('open') ? 'Ler menos ⌃' : 'Ler mais ⌄';">Ler mais ⌄</div>
+          </div>`;
+      }
       html += conteudos.length
         ? conteudos.map(item => `
             <div class="list-item" onclick="onOpenTrack('${item.id}')">
@@ -979,6 +1003,27 @@
             `;
           }).join("")
         : '<p class="empty-note">Nenhum ponto cantado publicado ainda nessa tradição.</p>';
+      return;
+    }
+
+    // Modo "Comidas": lista plana das comidas ritualísticas/oferendas, da tradição ativa
+    if (appState.bibliotecaCategoria === "comidas") {
+      const comidas = appState.conteudos.filter(c => c.tipo === "receita" && idsDaTradicao.has(c.guia_id));
+      container.innerHTML = comidas.length
+        ? comidas.map(item => {
+            const guia = appState.guias.find(g => g.id === item.guia_id);
+            return `
+              <div class="list-item" onclick="onOpenTrack('${item.id}')">
+                <div class="dot">${dotConteudo(item)}</div>
+                <div class="meta">
+                  <p class="title">${escapeHtml(item.titulo)}</p>
+                  <p class="sub">${guia ? escapeHtml(guia.nome) : "Comida ritualística"}</p>
+                </div>
+                <span class="chev">›</span>
+              </div>
+            `;
+          }).join("")
+        : '<p class="empty-note">Nenhuma comida ritualística cadastrada ainda nessa tradição.</p>';
       return;
     }
 
@@ -1093,7 +1138,7 @@
     updateWaveformProgress(0);
 
     document.getElementById("lyric-toggle-label").textContent =
-      item.tipo === "ponto" ? "Letra do ponto" : item.tipo === "conto" ? "Ler o conto" : "Ler a oração";
+      item.tipo === "ponto" ? "Letra do ponto" : item.tipo === "conto" ? "Ler o conto" : item.tipo === "receita" ? "Ver a receita" : "Ler a oração";
     const letraBox = document.getElementById("letra-box");
     letraBox.textContent = item.letra || "Texto ainda não cadastrado.";
     // Sem áudio, o texto é o próprio conteúdo — já abre expandido
@@ -1205,7 +1250,7 @@
   }
 
   function iconeConteudo(tipo) {
-    return tipo === "ponto" ? "▶" : tipo === "conto" ? "📖" : "≡";
+    return tipo === "ponto" ? "▶" : tipo === "conto" ? "📖" : tipo === "receita" ? "🍲" : "≡";
   }
   function dotConteudo(item) {
     return item.imagem_url
@@ -1215,6 +1260,7 @@
   function subConteudo(item) {
     if (item.tipo === "ponto") return formatDuracao(item.duracao_segundos) + " · áudio";
     if (item.tipo === "conto") return "Conto/história";
+    if (item.tipo === "receita") return "Comida ritualística";
     return "Leitura";
   }
 

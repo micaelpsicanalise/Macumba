@@ -135,6 +135,8 @@
           <input type="text" id="guia-linha" placeholder="linha de guerreiro">
           <label>Descrição</label>
           <textarea id="guia-descricao" placeholder="Texto curto de apresentação"></textarea>
+          <label>História (biografia longa — origem, arquétipo, características. Itans/lendas avulsas cadastre em Conteúdos)</label>
+          <textarea id="guia-historia" placeholder="Texto longo de história/biografia do guia" style="min-height:160px;"></textarea>
           <label>Ponto riscado (imagem) — deixe em branco pra manter o atual</label>
           <input type="hidden" id="guia-ponto-riscado-url">
           <input type="file" id="guia-riscado-arquivo" accept="image/*">
@@ -183,6 +185,7 @@
                 <option value="ponto">Ponto cantado</option>
                 <option value="oracao">Oração</option>
                 <option value="conto">Itã (conto / história)</option>
+                <option value="receita">Comida ritualística (receita/oferenda)</option>
               </select>
             </div>
           </div>
@@ -191,7 +194,7 @@
           <label>Título</label>
           <input type="text" id="conteudo-titulo" placeholder="Saudação a Ogum">
           <label>Letra / Texto</label>
-          <textarea id="conteudo-letra" placeholder="Letra do ponto, texto da oração, ou o Itã completo"></textarea>
+          <textarea id="conteudo-letra" placeholder="Letra do ponto, texto da oração, o Itã completo, ou o modo de preparo da comida ritualística"></textarea>
           <label>Voz (crédito, opcional)</label>
           <input type="text" id="conteudo-voz" placeholder="Marcos e Ana">
 
@@ -533,6 +536,7 @@
     document.getElementById("guia-origem-cultural").value = g.origem_cultural_id || "";
     document.getElementById("guia-linha").value = g.linha || "";
     document.getElementById("guia-descricao").value = g.descricao || "";
+    document.getElementById("guia-historia").value = g.historia || "";
     document.getElementById("guia-ordem").value = g.ordem || 0;
     document.getElementById("guia-ativo").checked = !!g.ativo;
     document.getElementById("guia-ponto-riscado-url").value = g.ponto_riscado_url || "";
@@ -556,6 +560,7 @@
     document.getElementById("guia-origem-cultural").value = "";
     document.getElementById("guia-linha").value = "";
     document.getElementById("guia-descricao").value = "";
+    document.getElementById("guia-historia").value = "";
     document.getElementById("guia-ordem").value = 0;
     document.getElementById("guia-ativo").checked = true;
     document.getElementById("guia-ponto-riscado-url").value = "";
@@ -595,6 +600,7 @@
         origem_cultural_id: document.getElementById("guia-origem-cultural").value || null,
         linha: document.getElementById("guia-linha").value.trim(),
         descricao: document.getElementById("guia-descricao").value.trim(),
+        historia: document.getElementById("guia-historia").value.trim() || null,
         ordem: parseInt(document.getElementById("guia-ordem").value) || 0,
         ativo: document.getElementById("guia-ativo").checked,
         ponto_riscado_url: riscadoUrl,
