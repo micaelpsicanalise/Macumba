@@ -157,3 +157,59 @@ algo parecido (ex.: mongóis, ainu, aborígenes australianos). A partir disso:
   novo (`macumba-audio-upload`, por exemplo), publicar o mesmo código nele,
   atualizar essa constante pra apontar pro novo endpoint, testar, e só depois
   apagar o Worker antigo.
+
+## Camada "história" + aba "Comidas" (agosto/2026)
+
+A pedido do Micael, a partir de um texto de referência sobre Ogum que ele
+enviou, dois pedaços novos entraram no modelo de conteúdo:
+
+- **Coluna `historia` em `guias`** — biografia longa do guia (origem,
+  arquétipo, características), separada dos Itans avulsos. Renderiza como um
+  card expansível ("Ler mais/menos") no topo do detalhe do guia, em
+  `app/index.html`, antes da lista de conteúdos. Editável no admin, no
+  formulário de guia, embaixo da Descrição curta.
+- **`conteudos.tipo = 'receita'`** — novo tipo de conteúdo, pra comidas
+  ritualísticas/oferendas (ex.: "Inhame com dendê e mel"). Vira uma aba nova
+  na Biblioteca do app (**Comidas**, ao lado de Itans), com ícone 🍲 e abre
+  no mesmo player de texto que já existia pra Itans (sem áudio obrigatório).
+  Cadastrado no admin pelo mesmo formulário de Conteúdos, só trocando o Tipo.
+
+Arquivos SQL:
+- `sql-historia-comidas.sql` — migration (coluna `historia` em `guias`; nota
+  sobre `conteudos.tipo` não ter constraint identificada neste repo, então
+  `'receita'` já funciona sem alteração de schema — só rode a parte de
+  constraint se o seu banco tiver um `check` que eu não vi aqui).
+- `sql-seed-ogum-historia-comidas.sql` — exemplo populado pra Ogum
+  (história + 2 Itans + 2 receitas), **texto reescrito com base no material
+  que o Micael mandou**, não copiado literalmente. Serve de referência de
+  tom/tamanho pra cadastrar os outros guias — não é conteúdo final revisado.
+
+Não criei nada pra "história" nem "comidas" na página **História** (a dos
+mapas/culturas) — são conceitos diferentes: aquela página é sobre culturas e
+migrações; essa camada nova é sobre o guia individual, dentro da Biblioteca.
+
+## Seção "Sobre o nome" na landing (agosto/2026)
+
+Nova seção `#sobre-o-nome` em `index.html`, entre o hero e o mapa mundial
+(`#mapa`), com link novo no menu. Ela existe pra deixar explícito, pra quem
+chega no site, o porquê do nome do projeto — algo que até então só estava
+documentado aqui no README (seção "Rebranding e fusão com raízes" acima),
+não explicado pro visitante:
+
+- Contextualiza que "macumba" foi historicamente usado de forma pejorativa/
+  colonial, generalizando práticas afro-brasileiras distintas sob um único
+  rótulo depreciativo.
+- Define o uso do termo aqui como retomada intencional: **Macumba como
+  sinônimo de Hierofania** — manifestação do sagrado através da matéria
+  (ponto riscado, búzio, tambor, erva, oferenda).
+- Deixa explícito que é esse princípio — não geografia nem uma tradição
+  específica — que organiza o site, conectando com a lógica do mapa mundial
+  logo abaixo (tradições afro-diaspóricas e outras raízes lado a lado, sem
+  hierarquia entre si).
+
+Texto escrito à mão pra essa entrega, baseado no conceito que o Micael já
+tinha descrito (ver seção de Rebranding); não é cópia de nenhuma fonte
+externa. Vale o Micael revisar o tom antes de publicar — é um texto sensível
+(fala de racismo religioso/colonialismo), então merece o olhar dele, não só
+o meu.
+
