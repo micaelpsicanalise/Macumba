@@ -674,14 +674,18 @@
   // dois blocos: África (raízes afro-diaspóricas) e o restante (outras
   // raízes que também usam matéria pra manifestar o sagrado — hierofania,
   // fora do eixo afro: mongóis, ainu, aborígenes australianos etc.).
+  //
+  // A separação usa `raiz_africana` (linhagem/ancestralidade), NÃO
+  // `continente` (que é geográfico) — Candomblé, Umbanda, Vodum e
+  // Santería têm raiz africana mesmo formadas nas Américas.
   function renderHistoriaList() {
     renderHistoriaContinenteFilters();
     const base = appState.historiaContinente === "todos"
       ? appState.culturas
       : appState.culturas.filter(c => c.continente === appState.historiaContinente);
 
-    const afro = base.filter(c => c.continente === "africa");
-    const outras = base.filter(c => c.continente !== "africa");
+    const afro = base.filter(c => c.raiz_africana);
+    const outras = base.filter(c => !c.raiz_africana);
 
     const containerAfro = document.getElementById("historia-list-afro");
     const containerOutras = document.getElementById("historia-list-outras");

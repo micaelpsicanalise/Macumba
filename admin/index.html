@@ -271,6 +271,27 @@
               <label style="margin:0;">Ativa (visível no app)</label>
             </div>
           </div>
+          <div class="row">
+            <div>
+              <label>Continente (geográfico — usado no mapa mundi)</label>
+              <select id="cultura-continente">
+                <option value="">—</option>
+                <option value="africa">África</option>
+                <option value="america-norte">América do Norte</option>
+                <option value="america-central-caribe">América Central e Caribe</option>
+                <option value="america-sul">América do Sul</option>
+                <option value="europa">Europa</option>
+                <option value="oriente-medio">Oriente Médio</option>
+                <option value="siberia">Sibéria</option>
+                <option value="asia">Ásia</option>
+                <option value="oceania">Oceania</option>
+              </select>
+            </div>
+            <div class="checkbox-row" style="margin-top:32px;">
+              <input type="checkbox" id="cultura-raiz-africana">
+              <label style="margin:0;">Raiz africana (linhagem/ancestralidade — usado na página História, independente do continente)</label>
+            </div>
+          </div>
           <div style="margin-top:16px; display:flex; gap:10px;">
             <button class="btn btn-primary" onclick="saveCultura()">Salvar cultura</button>
             <button class="btn" onclick="resetCulturaForm()">Nova cultura</button>
@@ -795,7 +816,7 @@
         <td>${escapeHtml(c.regiao_origem || "")}</td>
         <td>${Array.isArray(c.marcos) ? c.marcos.length : 0}</td>
         <td>${c.ordem}</td>
-        <td><span class="badge ${c.ativo ? "" : "off"}">${c.ativo ? "ativa" : "oculta"}</span></td>
+        <td><span class="badge ${c.ativo ? "" : "off"}">${c.ativo ? "ativa" : "oculta"}</span> ${c.raiz_africana ? '<span class="badge">raiz africana</span>' : ""}</td>
         <td><button class="btn btn-sm" onclick="editCultura('${c.id}')">Editar</button></td>
       </tr>
     `).join("") || `<tr><td colspan="6" class="muted">Nenhuma cultura ainda.</td></tr>`;
@@ -828,6 +849,8 @@
     document.getElementById("cultura-marcos").value = marcosParaTexto(c.marcos);
     document.getElementById("cultura-ordem").value = c.ordem || 0;
     document.getElementById("cultura-ativo").checked = !!c.ativo;
+    document.getElementById("cultura-continente").value = c.continente || "";
+    document.getElementById("cultura-raiz-africana").checked = !!c.raiz_africana;
     document.getElementById("cultura-form-title").textContent = "Editar cultura";
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -842,6 +865,8 @@
     document.getElementById("cultura-marcos").value = "";
     document.getElementById("cultura-ordem").value = 0;
     document.getElementById("cultura-ativo").checked = true;
+    document.getElementById("cultura-continente").value = "";
+    document.getElementById("cultura-raiz-africana").checked = false;
     document.getElementById("cultura-form-title").textContent = "Nova cultura";
   }
 
@@ -856,6 +881,8 @@
       marcos: textoParaMarcos(document.getElementById("cultura-marcos").value),
       ordem: parseInt(document.getElementById("cultura-ordem").value) || 0,
       ativo: document.getElementById("cultura-ativo").checked,
+      continente: document.getElementById("cultura-continente").value || null,
+      raiz_africana: document.getElementById("cultura-raiz-africana").checked,
     };
     if (!payload.nome || !payload.slug) {
       alert("Nome e slug são obrigatórios.");
