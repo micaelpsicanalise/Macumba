@@ -82,7 +82,7 @@ p{ margin:0; }
 .ring.small{ right:-10px; top:-10px; width:70px; height:70px; }
 .ring.left{ left:-30px; bottom:-40px; right:auto; top:auto; }
 
-.filters{ display:flex; gap:8px; margin-bottom:16px; }
+.filters{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
 .filter{
   font-size:11.5px; padding:6px 12px; border-radius:20px; white-space:nowrap;
   border:1px solid var(--line); color:var(--ink-soft); cursor:pointer; background:var(--card);
@@ -104,33 +104,28 @@ p{ margin:0; }
   aspect-ratio: 1 / 1;
   margin:0 auto 18px;
   border-radius:50%;
-  background: var(--gold-soft);
-  /* Placeholder do tapete/base — troque por uma imagem real depois:
-     background-image: url('assets/base-buzios.png');
-     background-size: cover; background-position: center; */
-  box-shadow: inset 0 0 0 2px rgba(30,42,32,0.10), 0 6px 16px rgba(30,42,32,0.12);
+  background: radial-gradient(circle at 40% 32%, #F1E6C6, var(--gold-soft) 72%);
+  box-shadow: inset 0 0 0 2px rgba(30,42,32,0.10), inset 0 10px 30px rgba(30,42,32,0.08), 0 6px 16px rgba(30,42,32,0.12);
 }
 .buzio{
   position:absolute;
   width:34px; height:38px;
-  border-radius: 40% 40% 45% 45% / 55% 55% 45% 45%;
-  display:flex; align-items:center; justify-content:center;
-  transition: transform 0.5s cubic-bezier(.2,.9,.3,1.2), opacity 0.3s ease;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+  transition: transform 0.55s cubic-bezier(.2,.9,.3,1.2), opacity 0.3s ease;
   transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
   opacity:0;
-  /* Placeholder — trocar por imagens realistas depois, ex:
-     .buzio.aberto{ background-image:url('assets/buzio-aberto.png'); }
-     .buzio.fechado{ background-image:url('assets/buzio-fechado.png'); }
-     background-size:cover; background-repeat:no-repeat; */
+  filter: drop-shadow(0 3px 3px rgba(30,42,32,0.35));
+  pointer-events:none;
 }
 .buzio.tossed{ opacity:1; }
-.buzio.aberto{ background: var(--green); box-shadow: inset 0 0 0 2px var(--gold-soft); }
-.buzio.aberto::after{ content:""; width:55%; height:14%; background:var(--gold-soft); border-radius:6px; }
-.buzio.fechado{ background: #EDE6D3; box-shadow: inset 0 0 0 2px var(--line); }
-.buzio.testemunha{ box-shadow: inset 0 0 0 2px var(--gold); }
+.buzio.aberto{ background-image:url('assets/buzio-aberto.webp'); }
+.buzio.fechado{ background-image:url('assets/buzio-fechado.webp'); }
+.buzio.testemunha{ filter: drop-shadow(0 3px 3px rgba(30,42,32,0.35)) drop-shadow(0 0 0 2px var(--gold)); }
 .buzio.testemunha::before{
-  content:""; position:absolute; inset:-4px; border-radius:50%;
-  border:1.5px dashed var(--gold); opacity:0.8;
+  content:""; position:absolute; inset:-6px; border-radius:50%;
+  border:1.5px dashed var(--gold); opacity:0.85;
 }
 
 .stat-row{ display:flex; gap:10px; margin-bottom:16px; }
@@ -158,6 +153,45 @@ p{ margin:0; }
   margin-top:12px; margin-bottom:4px; font-weight:600;
 }
 .oracle-card .parte-label:first-of-type{ margin-top:0; }
+
+/* ---------- ÍBÒ (confirmação sim/não) ---------- */
+.ibo-card{
+  background:var(--green); color:#fff; border-radius: var(--radius);
+  padding:18px 20px; margin-bottom:16px; text-align:center;
+}
+.ibo-card .eyebrow{ color:var(--gold-soft); }
+.ibo-card h3{ color:#fff; font-size:16.5px; margin-top:4px; }
+.ibo-card .ibo-intro{ font-size:12px; color:#D9E2DA; line-height:1.55; margin-top:6px; }
+.ibo-btn{
+  border:none; background:var(--gold); color:#fff; font-family:'Inter', sans-serif;
+  font-weight:600; font-size:13px; padding:11px 18px; border-radius:100px;
+  cursor:pointer; margin-top:14px;
+}
+.ibo-btn:disabled{ opacity:0.5; cursor:default; }
+.ibo-maos{ display:flex; justify-content:center; gap:26px; margin-top:18px; }
+.ibo-mao{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  opacity:0.55; transition: opacity .4s ease, transform .4s ease;
+}
+.ibo-mao.pedida{ opacity:1; transform:translateY(-3px); }
+.ibo-punho{
+  width:56px; height:56px; border-radius:50%;
+  background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.25);
+  display:flex; align-items:center; justify-content:center;
+  transition: background .4s ease, border-color .4s ease, transform .5s cubic-bezier(.2,.9,.3,1.2);
+}
+.ibo-mao.revelada .ibo-punho{
+  background:#fff; border-color:var(--gold-soft); transform:scale(1.08);
+}
+.ibo-punho svg{ width:26px; height:26px; opacity:0.6; transition:opacity .3s ease; }
+.ibo-mao.revelada .ibo-punho svg{ opacity:1; }
+.ibo-mao-label{ font-size:10.5px; color:#D9E2DA; text-transform:uppercase; letter-spacing:0.04em; }
+.ibo-veredito{
+  margin-top:16px; font-family:'Fraunces', serif; font-size:17px; color:#fff;
+  min-height:24px;
+}
+.ibo-veredito .sub{ display:block; font-family:'Inter', sans-serif; font-size:12px; color:#D9E2DA; margin-top:4px; font-weight:400; }
+.ibo-veredito.ire{ color:var(--gold-soft); }
 
 .progress-note{
   text-align:center; font-size:12px; color:var(--ink-soft); margin-bottom:14px;
@@ -230,8 +264,10 @@ p{ margin:0; }
       </div>
 
       <div class="filters" id="sistema-filters">
+        <div class="filter" data-sistema="4" onclick="setSistema(this, 4)">4 búzios · Alafiá</div>
         <div class="filter active" data-sistema="16" onclick="setSistema(this, 16)">16 búzios</div>
         <div class="filter" data-sistema="18" onclick="setSistema(this, 18)">18 búzios</div>
+        <div class="filter" data-sistema="21" onclick="setSistema(this, 21)">21 búzios · Angola</div>
       </div>
 
       <div class="guia-card">
@@ -278,6 +314,15 @@ p{ margin:0; }
         <hr class="sobre-divider">
 
         <div class="sobre-block">
+          <span class="sobre-tag">Sistema de 4 búzios</span>
+          <h3>Alafiá, a resposta rápida</h3>
+          <p>O jogo de Alafiá usa só 4 búzios, numa jogada única e direta — sem cruzar dois lançamentos como nos sistemas maiores. É o método mais simples e mais rápido do jogo, tradicionalmente usado pra perguntas objetivas, tipo sim/não, ou como consulta preliminar antes de abrir os 16 Odus.</p>
+          <p>Cada uma das 5 quedas possíveis (de 0 a 4 búzios abertos) tem seu próprio nome e leitura, cadastrados pela casa no painel admin.</p>
+        </div>
+
+        <hr class="sobre-divider">
+
+        <div class="sobre-block">
           <span class="sobre-tag">Sistema de 16 búzios</span>
           <h3>Merindilogun, a raiz iorubá</h3>
           <p>O sistema de 16 búzios (chamado Merindilogun) é o mais difundido no mundo, presente no Candomblé Ketu, na Santería cubana e no Lukumí. Ele deriva diretamente do oráculo de Ifá, praticado pelos povos iorubás (região que hoje corresponde à Nigéria e ao Benin).</p>
@@ -297,9 +342,28 @@ p{ margin:0; }
         <hr class="sobre-divider">
 
         <div class="sobre-block">
+          <span class="sobre-tag">Sistema de 21 búzios</span>
+          <h3>A variação maior de Angola</h3>
+          <p>Além da adaptação de 18, algumas casas de tradição banta jogam com 21 búzios: os mesmos 16 da contagem principal, mais 5 testemunhas — um número maior de confirmação, usado em casas que preferem uma leitura com mais camadas antes de fechar a resposta.</p>
+          <p>Assim como no sistema de 18, quando o total de búzios abertos passa de 16 (ou seja, uma ou mais testemunhas também abrem), a leitura sai da tabela comum dos Odus e vira um aviso à parte. A regra exata de quantas testemunhas abertas pedem atenção, e o que cada combinação significa, é definida por cada casa no cadastro.</p>
+        </div>
+
+        <hr class="sobre-divider">
+
+        <div class="sobre-block">
+          <span class="sobre-tag">Depois da leitura</span>
+          <h3>O Íbò, a confirmação sim/não</h3>
+          <p>Depois de qualquer consulta, dá pra pedir uma confirmação direta: o Íbò. Na tradição, o sacerdote entrega dois objetos com sentidos opostos — aqui, uma pedra (Irê, resposta positiva) e um osso (Ibi, peça atenção ou ebó) — que ficam escondidos, um em cada mão do consulente, sem que ninguém saiba qual está onde.</p>
+          <p>Quem manda abrir a mão certa não é você nem o sistema por acaso: é a própria queda dos búzios que você acabou de jogar. Por isso o botão "Consultar o Íbò" só aparece depois de uma leitura — ele usa o resultado daquela consulta pra decidir qual mão se abre, e revela o objeto que estava escondido ali.</p>
+          <p>A regra exata de qual queda pede qual mão varia de terreiro pra terreiro; aqui usamos uma regra simples (par abre a direita, ímpar abre a esquerda) só pra manter a mecânica funcionando — ajuste como preferir no código, ou trate o Íbò como uma camada extra de reflexão, não como substituto da leitura de quem tem a autoridade religiosa pra isso.</p>
+        </div>
+
+        <hr class="sobre-divider">
+
+        <div class="sobre-block">
           <span class="sobre-tag">Como lemos aqui</span>
-          <h3>Duas jogadas, um resultado só</h3>
-          <p>Pra chegar mais perto de como a consulta é feita de verdade, esse jogo faz duas jogadas: a primeira define o Odu "pai", a segunda o Odu "mãe". O cruzamento das duas é o que forma a leitura final — as leituras de cada Odu, e das combinações com texto próprio, são escritas pela própria casa.</p>
+          <h3>Uma ou duas jogadas, conforme o sistema</h3>
+          <p>No sistema de 4 búzios (Alafiá), a resposta vem numa jogada só — direta, sem composição. Já nos sistemas de 16, 18 e 21, pra chegar mais perto de como a consulta é feita de verdade, o jogo faz duas jogadas: a primeira define o Odu "pai", a segunda o Odu "mãe". O cruzamento das duas é o que forma a leitura final — as leituras de cada Odu, e das combinações com texto próprio, são escritas pela própria casa.</p>
         </div>
 
       </div>
@@ -328,6 +392,20 @@ const supabaseClient = (SUPABASE_URL.startsWith("http"))
   : null;
 
 /* ==========================================================
+   SISTEMAS DE JOGO
+   - total: qtd de búzios lançados
+   - jogadas: 1 (resposta direta) ou 2 (Odu composto pai + mãe)
+   - testemunhas: qtd de búzios extras além da faixa principal dos Odus
+     (0 a 16). Quando o nº de abertos ultrapassa 16, a leitura vira aviso.
+   ========================================================== */
+const SISTEMAS = {
+  4:  { nome: "Alafiá",       total: 4,  jogadas: 1, testemunhas: 0 },
+  16: { nome: "Merindilogun", total: 16, jogadas: 2, testemunhas: 0 },
+  18: { nome: "Angola (18)",  total: 18, jogadas: 2, testemunhas: 2 },
+  21: { nome: "Angola (21)",  total: 21, jogadas: 2, testemunhas: 5 },
+};
+
+/* ==========================================================
    ESTADO
    ========================================================== */
 const STORAGE_KEY = "buzios_historico_v1";
@@ -335,10 +413,11 @@ const STORAGE_KEY = "buzios_historico_v1";
 const appState = {
   sistema: 16,
   historico: [],
-  odus: { 16: {}, 18: {} },       // buzios_odus, indexado por [sistema][abertos]
-  compostos: { 16: {}, 18: {} },  // buzios_odus_compostos, indexado por [sistema]["pai-mae"]
-  jogadaAtual: 0,                 // 0 = ainda não jogou, 1 = jogou a primeira (pai), 2 = concluído
-  odusJogada: [null, null],       // [odu pai, odu mae] da consulta em andamento
+  odus: { 4: {}, 16: {}, 18: {}, 21: {} },       // buzios_odus, indexado por [sistema][abertos]
+  compostos: { 16: {}, 18: {}, 21: {} },         // buzios_odus_compostos, indexado por [sistema]["pai-mae"]
+  jogadaAtual: 0,                 // 0 = ainda não jogou, 1 = jogou a primeira, 2 = concluído
+  odusJogada: [null, null],       // [odu pai, odu mae] da consulta em andamento (sistemas de 2 jogadas)
+  ultimoTotalAbertos: 0,          // soma de búzios abertos da última consulta concluída (usado pelo Íbò)
   itans: [],                      // conteudos tipo=conto vinculados a um odu_id
   itansPorOdu: {},                // odu_id -> [itans]
   itansModo: "lista",             // "lista" ou "detalhe"
@@ -361,12 +440,16 @@ async function carregarLeituras() {
     if (errItans) throw errItans;
     if (errGuias) throw errGuias;
 
-    const odusPorSistema = { 16: {}, 18: {} };
-    (odus || []).forEach(o => { odusPorSistema[o.sistema][o.abertos] = o; });
+    const odusPorSistema = { 4: {}, 16: {}, 18: {}, 21: {} };
+    (odus || []).forEach(o => {
+      if (!odusPorSistema[o.sistema]) odusPorSistema[o.sistema] = {};
+      odusPorSistema[o.sistema][o.abertos] = o;
+    });
     appState.odus = odusPorSistema;
 
-    const compostosPorSistema = { 16: {}, 18: {} };
+    const compostosPorSistema = { 16: {}, 18: {}, 21: {} };
     (compostos || []).forEach(c => {
+      if (!compostosPorSistema[c.sistema]) compostosPorSistema[c.sistema] = {};
       compostosPorSistema[c.sistema][`${c.abertos_pai}-${c.abertos_mae}`] = c;
     });
     appState.compostos = compostosPorSistema;
@@ -391,14 +474,18 @@ async function carregarLeituras() {
 /* ==========================================================
    INTERPRETAÇÃO
    ========================================================== */
-function ehExcecaoAngola(sistema, abertos) {
-  return sistema === 18 && abertos >= 17;
+function ehExcecaoAviso(sistema, abertos) {
+  const cfg = SISTEMAS[sistema];
+  if (!cfg || !cfg.testemunhas) return false;
+  return abertos > (cfg.total - cfg.testemunhas);
 }
 
-function leituraExcecaoAngola(abertos) {
+function leituraExcecaoAviso(sistema, abertos) {
+  const cfg = SISTEMAS[sistema];
+  const testemunhasAbertas = abertos - (cfg.total - cfg.testemunhas);
   return {
     titulo: `${abertos} abertos — Aviso das testemunhas`,
-    texto: "As duas testemunhas se somaram à contagem principal. Tradicionalmente, isso é lido como um chamado direto dos ancestrais — não entra na tabela comum dos 16 Odus. Pare e faça uma reza antes de seguir com a consulta.",
+    texto: `${testemunhasAbertas} de ${cfg.testemunhas} testemunha(s) se somaram à contagem principal. Tradicionalmente, isso é lido como um chamado direto dos ancestrais — não entra na tabela comum dos Odus. Pare e faça uma reza antes de seguir com a consulta.`,
     generico: true,
   };
 }
@@ -406,7 +493,7 @@ function leituraExcecaoAngola(abertos) {
 function leituraOduGenerica(abertos, total) {
   return {
     nome: `${abertos} de ${total} abertos`,
-    leitura: "Ainda sem leitura cadastrada pra esse Odu — cadastre o texto oficial no painel admin, aba Búzios.",
+    leitura: "Ainda sem leitura cadastrada pra essa queda — cadastre o texto oficial no painel admin, aba Búzios.",
     generico: true,
   };
 }
@@ -414,7 +501,7 @@ function leituraOduGenerica(abertos, total) {
 function getOdu(sistema, abertos) {
   const odu = appState.odus[sistema] && appState.odus[sistema][abertos];
   if (odu) return { ...odu, generico: false };
-  return leituraOduGenerica(abertos, sistema);
+  return leituraOduGenerica(abertos, SISTEMAS[sistema] ? SISTEMAS[sistema].total : sistema);
 }
 
 // Combina os dois Odus (pai + mãe) numa leitura única — usa o override
@@ -491,9 +578,10 @@ function setSistema(el, valor) {
 }
 
 function reiniciarConsulta() {
+  const cfg = SISTEMAS[appState.sistema];
   appState.jogadaAtual = 0;
   appState.odusJogada = [null, null];
-  document.getElementById("throw-sub").textContent = `Sistema de ${appState.sistema} búzios`;
+  document.getElementById("throw-sub").textContent = `Sistema de ${cfg.total} búzios${cfg.nome ? " · " + cfg.nome : ""}`;
   document.getElementById("throw-eyebrow").textContent = "Pronto para consultar";
   document.getElementById("throw-title").textContent = "Toque para lançar";
   document.getElementById("resultado-area").innerHTML = "";
@@ -541,30 +629,38 @@ function gerarPosicoes(qtd, containerPx, shellPx) {
 }
 
 /* ==========================================================
-   LANÇAMENTO — duas jogadas cruzadas (Odu composto)
+   LANÇAMENTO — 1 jogada (Alafiá) ou 2 jogadas cruzadas (Odu composto)
    ========================================================== */
 function lancarBuzios() {
   const btn = document.getElementById("btn-lancar");
   const circle = document.getElementById("buzios-circle");
   const sistema = appState.sistema;
-  const numeroDaJogada = appState.jogadaAtual + 1; // 1 = pai, 2 = mae
+  const cfg = SISTEMAS[sistema];
+  const numeroDaJogada = appState.jogadaAtual + 1; // 1 = única ou pai, 2 = mae
 
   btn.disabled = true;
   document.getElementById("resultado-area").innerHTML = "";
-  document.getElementById("throw-eyebrow").textContent =
-    numeroDaJogada === 1 ? "Primeira jogada (Odu pai)…" : "Segunda jogada (Odu mãe)…";
+
+  if (cfg.jogadas === 1) {
+    document.getElementById("throw-eyebrow").textContent = "Lançando…";
+  } else {
+    document.getElementById("throw-eyebrow").textContent =
+      numeroDaJogada === 1 ? "Primeira jogada (Odu pai)…" : "Segunda jogada (Odu mãe)…";
+  }
   document.getElementById("throw-title").textContent = "Lançando…";
 
   // Cada búzio tem ~45% de chance de abrir (leve viés pra "fechado",
   // como no jogo físico com búzios limados na base).
-  const total = sistema;
+  const total = cfg.total;
   const resultados = Array.from({ length: total }, () => Math.random() < 0.45);
   const abertos = resultados.filter(Boolean).length;
-  const testemunhas = sistema === 18 ? [total - 2, total - 1] : []; // últimos 2 índices são as testemunhas
+  // As últimas posições do lançamento são as testemunhas, quando existirem.
+  const testemunhas = [];
+  for (let i = total - cfg.testemunhas; i < total; i++) testemunhas.push(i);
 
   circle.innerHTML = "";
   const containerPx = circle.clientWidth;
-  const shellPx = total > 16 ? 30 : 34;
+  const shellPx = total > 16 ? 26 : (total > 8 ? 30 : 40);
   const posicoes = gerarPosicoes(total, containerPx, shellPx);
 
   resultados.forEach((aberto, i) => {
@@ -573,7 +669,7 @@ function lancarBuzios() {
     div.className = "buzio " + (aberto ? "aberto" : "fechado") + (ehTestemunha ? " testemunha" : "");
     const p = posicoes[i];
     div.style.width = shellPx + "px";
-    div.style.height = Math.round(shellPx * 1.12) + "px";
+    div.style.height = Math.round(shellPx * 1.3) + "px";
     div.style.left = p.x + "px";
     div.style.top = p.y + "px";
     circle.appendChild(div);
@@ -584,6 +680,18 @@ function lancarBuzios() {
   });
 
   setTimeout(() => {
+    if (cfg.jogadas === 1) {
+      // Sistemas de jogada única (ex.: Alafiá) — conclui direto.
+      appState.jogadaAtual = 1;
+      document.getElementById("throw-eyebrow").textContent = "Consulta concluída";
+      document.getElementById("throw-title").textContent = `${abertos} abertos, ${total - abertos} fechados`;
+      document.getElementById("progress-note").style.display = "none";
+      btn.textContent = "Nova consulta";
+      concluirConsultaSimples(sistema, abertos);
+      btn.disabled = false;
+      return;
+    }
+
     appState.odusJogada[numeroDaJogada - 1] = abertos;
 
     if (numeroDaJogada === 1) {
@@ -608,14 +716,30 @@ function lancarBuzios() {
       concluirConsulta(sistema, abertosPai, abertosMae);
       btn.disabled = false;
     }
-  }, 25 * total + 500);
+  }, 25 * total + 550);
+}
+
+function concluirConsultaSimples(sistema, abertos) {
+  if (ehExcecaoAviso(sistema, abertos)) return mostrarExcecao(sistema, abertos, "única");
+
+  const odu = getOdu(sistema, abertos);
+  mostrarResultadoSimples(sistema, abertos, odu);
+
+  appState.historico.unshift({
+    data: new Date().toISOString(),
+    sistema,
+    abertosPai: abertos,
+    abertosMae: null,
+    titulo: odu.nome,
+  });
+  salvarHistorico();
 }
 
 function concluirConsulta(sistema, abertosPai, abertosMae) {
-  // Se qualquer uma das duas jogadas caiu na exceção Angola (17/18
-  // abertos), a consulta para ali — não forma Odu composto.
-  if (ehExcecaoAngola(sistema, abertosPai)) return mostrarExcecao(abertosPai, "primeira");
-  if (ehExcecaoAngola(sistema, abertosMae)) return mostrarExcecao(abertosMae, "segunda");
+  // Se qualquer uma das duas jogadas caiu na exceção de testemunhas, a
+  // consulta para ali — não forma Odu composto.
+  if (ehExcecaoAviso(sistema, abertosPai)) return mostrarExcecao(sistema, abertosPai, "primeira");
+  if (ehExcecaoAviso(sistema, abertosMae)) return mostrarExcecao(sistema, abertosMae, "segunda");
 
   const oduPai = getOdu(sistema, abertosPai);
   const oduMae = getOdu(sistema, abertosMae);
@@ -633,12 +757,12 @@ function concluirConsulta(sistema, abertosPai, abertosMae) {
   salvarHistorico();
 }
 
-function mostrarExcecao(abertos, qualJogada) {
-  const leitura = leituraExcecaoAngola(abertos);
+function mostrarExcecao(sistema, abertos, qualJogada) {
+  const leitura = leituraExcecaoAviso(sistema, abertos);
   const area = document.getElementById("resultado-area");
   area.innerHTML = `
     <div class="oracle-card">
-      <p class="eyebrow">Resultado especial — ${qualJogada} jogada</p>
+      <p class="eyebrow">Resultado especial — jogada ${qualJogada}</p>
       <h3>${leitura.titulo}</h3>
       <p class="texto">${leitura.texto}</p>
     </div>
@@ -653,7 +777,29 @@ function mostrarExcecao(abertos, qualJogada) {
   salvarHistorico();
 }
 
+function mostrarResultadoSimples(sistema, abertos, odu) {
+  appState.ultimoTotalAbertos = abertos;
+  const area = document.getElementById("resultado-area");
+  const itansBtn = (odu.id && appState.itansPorOdu[odu.id] && appState.itansPorOdu[odu.id].length)
+    ? `<button class="clear-btn" style="width:100%; margin-top:8px;" onclick="abrirItanDoOdu('${odu.id}')">📖 Ler o Itã de ${odu.nome}</button>`
+    : "";
+  area.innerHTML = `
+    <div class="stat-row">
+      <div class="stat"><p class="num">${abertos}</p><p class="label">búzios abertos</p></div>
+    </div>
+    <div class="oracle-card">
+      <p class="eyebrow">Leitura</p>
+      <h3>${odu.nome}</h3>
+      <p class="texto">${odu.leitura}</p>
+      ${odu.generico ? '<p class="edit-note">Leitura ainda incompleta — cadastre essa queda no painel admin, aba Búzios.</p>' : ''}
+      ${itansBtn}
+    </div>
+    ${renderIboCard()}
+  `;
+}
+
 function mostrarResultado(leitura, sistema, abertosPai, abertosMae, oduPai, oduMae) {
+  appState.ultimoTotalAbertos = abertosPai + abertosMae;
   const area = document.getElementById("resultado-area");
   const partesHtml = leitura.partes.map(parte => `
     ${parte.label ? `<p class="parte-label">${parte.label}</p>` : ""}
@@ -677,7 +823,81 @@ function mostrarResultado(leitura, sistema, abertosPai, abertosMae, oduPai, oduM
       ${leitura.generico ? '<p class="edit-note">Leitura ainda incompleta — cadastre os Odus dessa jogada no painel admin, aba Búzios.</p>' : ''}
       ${itansBtns}
     </div>
+    ${renderIboCard()}
   `;
+}
+
+/* ==========================================================
+   ÍBÒ — confirmação sim/não com objetos ocultos nas mãos
+   O sistema esconde os dois objetos (pedra = Irê/Sim, osso = Ibi/Não)
+   nas mãos virtuais do consulente. A paridade do total de búzios
+   abertos na consulta que acabou de ser feita é o que "manda" abrir
+   uma das mãos — o jogador não escolhe, só revela.
+   (A regra exata de qual paridade abre qual mão varia de casa pra
+   casa; ajuste ehParImpar/maoParaAbrir se sua casa usar outra regra.)
+   ========================================================== */
+const IBO_ICONES = {
+  pedra: `<svg viewBox="0 0 32 32" fill="none"><path d="M6 21c-1-4 2-8 6-9 1-3 5-5 9-3 4 2 6 6 4 10-1 3-4 5-8 5H12c-3 0-5-1-6-3z" fill="var(--gold)"/></svg>`,
+  osso: `<svg viewBox="0 0 32 32" fill="none"><path d="M8 12a3 3 0 1 0-4 3l14 14a3 3 0 1 0 4-4L8 11z" fill="#EDE6D3" stroke="var(--ink-soft)" stroke-width="0.5"/><path d="M24 8a3 3 0 1 1 4 4L14 26a3 3 0 1 1-4-4L24 8z" fill="#EDE6D3" stroke="var(--ink-soft)" stroke-width="0.5"/></svg>`,
+  fechada: `<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.4" stroke-dasharray="3 4"/></svg>`,
+};
+
+function renderIboCard() {
+  return `
+    <div class="ibo-card" id="ibo-card">
+      <p class="eyebrow">Confirmação</p>
+      <h3>Consultar o Íbò</h3>
+      <p class="ibo-intro">Duas respostas ficam escondidas, uma em cada mão: Irê (sim) e Ibi (atenção/não). Os búzios que você acabou de jogar são quem manda abrir a mão certa — você só revela.</p>
+      <button class="ibo-btn" id="ibo-btn" onclick="consultarIbo()">Abrir a mão indicada</button>
+      <div class="ibo-maos" id="ibo-maos">
+        <div class="ibo-mao" id="ibo-mao-esquerda">
+          <div class="ibo-punho">${IBO_ICONES.fechada}</div>
+          <span class="ibo-mao-label">Esquerda</span>
+        </div>
+        <div class="ibo-mao" id="ibo-mao-direita">
+          <div class="ibo-punho">${IBO_ICONES.fechada}</div>
+          <span class="ibo-mao-label">Direita</span>
+        </div>
+      </div>
+      <p class="ibo-veredito" id="ibo-veredito"></p>
+    </div>
+  `;
+}
+
+function consultarIbo() {
+  const btn = document.getElementById("ibo-btn");
+  btn.disabled = true;
+
+  // 1) Esconde os objetos nas mãos, em ordem sorteada — o "segredo".
+  const invertido = Math.random() < 0.5;
+  const objetoEsquerda = invertido ? "osso" : "pedra";
+  const objetoDireita = invertido ? "pedra" : "osso";
+
+  // 2) A paridade do total de búzios abertos na última jogada manda
+  //    qual mão se abre (ímpar = esquerda, par = direita).
+  const total = appState.ultimoTotalAbertos || 0;
+  const maoPedida = (total % 2 !== 0) ? "esquerda" : "direita";
+  const objetoRevelado = maoPedida === "esquerda" ? objetoEsquerda : objetoDireita;
+
+  const maoEsquerdaEl = document.getElementById("ibo-mao-esquerda");
+  const maoDireitaEl = document.getElementById("ibo-mao-direita");
+  const maoPedidaEl = maoPedida === "esquerda" ? maoEsquerdaEl : maoDireitaEl;
+
+  maoPedidaEl.classList.add("pedida");
+
+  setTimeout(() => {
+    maoPedidaEl.classList.add("revelada");
+    maoPedidaEl.querySelector(".ibo-punho").innerHTML = IBO_ICONES[objetoRevelado];
+
+    const veredito = document.getElementById("ibo-veredito");
+    if (objetoRevelado === "pedra") {
+      veredito.className = "ibo-veredito ire";
+      veredito.innerHTML = `Irê — resposta positiva<span class="sub">Mão ${maoPedida}, indicada pelos ${total} búzios abertos na consulta.</span>`;
+    } else {
+      veredito.className = "ibo-veredito";
+      veredito.innerHTML = `Ibi — peça atenção ou ebó<span class="sub">Mão ${maoPedida}, indicada pelos ${total} búzios abertos na consulta.</span>`;
+    }
+  }, 500);
 }
 
 /* ==========================================================
@@ -744,9 +964,14 @@ function renderHistorico() {
     const data = new Date(item.data);
     const dataFmt = data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
     const horaFmt = data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-    const dotLabel = (item.abertosPai !== null && item.abertosPai !== undefined)
-      ? `${item.abertosPai}·${item.abertosMae}`
-      : "!";
+    let dotLabel;
+    if (item.abertosPai === null || item.abertosPai === undefined) {
+      dotLabel = "!";
+    } else if (item.abertosMae === null || item.abertosMae === undefined) {
+      dotLabel = `${item.abertosPai}`;
+    } else {
+      dotLabel = `${item.abertosPai}·${item.abertosMae}`;
+    }
     return `
       <div class="list-item">
         <div class="dot">${dotLabel}</div>

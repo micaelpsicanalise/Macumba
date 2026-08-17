@@ -156,17 +156,14 @@
     border:1px solid rgba(185,138,44,0.35);
   }
   .shell{
-    position:absolute; width:30px; height:34px;
-    border-radius:40% 40% 45% 45% / 55% 55% 45% 45%;
+    position:absolute; width:30px; height:38px;
+    background-repeat:no-repeat; background-position:center; background-size:contain;
     animation: float 5s ease-in-out infinite;
     transform-origin:center;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4));
   }
-  .shell.aberto{ background:var(--gold-soft); box-shadow: inset 0 0 0 2px rgba(27,46,32,0.35); }
-  .shell.aberto::after{
-    content:""; display:block; width:52%; height:13%; margin:44% auto 0;
-    background:var(--green-dark); border-radius:6px;
-  }
-  .shell.fechado{ background:#3A4F3D; box-shadow: inset 0 0 0 2px rgba(233,220,185,0.25); }
+  .shell.aberto{ background-image:url('assets/buzio-aberto.webp'); }
+  .shell.fechado{ background-image:url('assets/buzio-fechado.webp'); }
   @keyframes float{
     0%,100%{ transform: translateY(0) rotate(var(--rot, 0deg)); }
     50%{ transform: translateY(-6px) rotate(calc(var(--rot, 0deg) + 4deg)); }
@@ -224,7 +221,6 @@
       </div>
       <div class="nav-links">
         <a href="#sobre-o-nome">Sobre o nome</a>
-        <a href="manifesto/">Manifesto</a>
         <a href="#mapa">Mapa mundial</a>
         <a href="#recursos">Recursos</a>
         <a href="#buzios">Jogo de búzios</a>
@@ -282,7 +278,6 @@
         <p>"Quem conta um conto, aumenta um ponto." Essa característica, inseparável da transmissão oral, deixa de parecer um defeito quando enxergamos a ligação entre toda a cultura humana. Saber os quandos e porquês de cada versão não diminui sua relevância, pelo contrário, a eleva. O objetivo aqui não é dizer quem veio primeiro ou quem está certo, e sim prestar atenção ao que todas essas histórias, juntas, estão apontando. Cada uma tem força própria, e vai se desdobrando, se complexificando, mostrando a grandeza dos inúmeros pontos de vista sobre um mesmo fenômeno: os temas universais que acompanham a psique humana.</p>
         <p>Chamamos isso de sincretismo contracolonialista. Não é fusão que apaga diferenças, é confluência: tradições distintas correndo lado a lado, se tocando sem se dissolverem uma na outra. É também transfluência, porque essas correntes atravessam fronteiras de continente, de língua e de tempo, carregando o mesmo impulso humano de manifestar o sagrado através da matéria.</p>
       </div>
-      <p style="margin-top:24px;"><a class="btn btn-ghost btn-sm" href="manifesto/">Ler o manifesto completo →</a></p>
     </div>
   </section>
 
@@ -380,11 +375,11 @@
       <div class="buzios-copy">
         <p class="eyebrow">Oráculo</p>
         <h2>Jogue os búzios, aqui mesmo</h2>
-        <p class="sub">Duas jogadas cruzadas, no modelo tradicional do Odu composto. Os búzios caem soltos dentro do círculo, você vê o resultado de cada jogada e recebe a leitura combinada na hora.</p>
+        <p class="sub">Quatro sistemas diferentes — de uma resposta rápida com 4 búzios (Alafiá) até a jogada dupla dos 16, 18 ou 21 búzios. Os búzios caem soltos dentro do círculo, você vê o resultado de cada jogada e recebe a leitura na hora.</p>
         <ul class="buzios-list">
           <li>
             <svg class="check" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>Sistema de 16 ou 18 búzios, você escolhe</span>
+            <span>Sistemas de 4 (Alafiá), 16, 18 ou 21 búzios, você escolhe</span>
           </li>
           <li>
             <svg class="check" viewBox="0 0 20 20" fill="none"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
