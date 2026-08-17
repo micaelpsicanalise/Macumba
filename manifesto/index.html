@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manifesto · Macumba</title>
+<meta name="description" content="Macumba é um portal de hierofanias. O manifesto completo sobre o nome, a proposta e a política do projeto.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="../icons/icon-192.png" type="image/png">
+<style>
+  :root{
+    --bg: #F6F2E9;
+    --bg-warm: #EFE8D8;
+    --ink: #1E2A20;
+    --ink-soft: #4B5A4E;
+    --green: #2F4A34;
+    --green-dark: #1B2E20;
+    --gold: #B98A2C;
+    --gold-soft: #E9DCB9;
+    --terra: #A15C32;
+    --line: rgba(30,42,32,0.14);
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter', sans-serif;
+  }
+  a{ color:inherit; }
+  .wrap{ max-width:680px; margin:0 auto; padding:0 24px; }
+
+  nav{
+    position:sticky; top:0; z-index:20;
+    background:rgba(246,242,233,0.9); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  nav .wrap{
+    max-width:1080px; display:flex; align-items:center; justify-content:space-between; height:64px;
+  }
+  .logo{ display:flex; align-items:center; gap:9px; font-family:'Fraunces', serif; font-size:17px; text-decoration:none; }
+  .logo .mark{ width:20px; height:20px; }
+  .back-link{ font-size:13px; color:var(--ink-soft); text-decoration:none; }
+  .back-link:hover{ color:var(--ink); }
+
+  header.hero{
+    background:var(--green-dark); color:var(--gold-soft);
+    padding:64px 0 56px; text-align:center;
+  }
+  header.hero .eyebrow{
+    font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--gold); font-weight:600;
+  }
+  header.hero h1{
+    font-family:'Fraunces', serif; font-weight:600; color:#fff;
+    font-size:clamp(30px,5vw,46px); margin:14px 0 0;
+  }
+  header.hero p{ color:#D9E2DA; font-size:14.5px; max-width:460px; margin:16px auto 0; line-height:1.6; }
+
+  main{ padding:56px 0 96px; }
+  main .wrap{ display:flex; flex-direction:column; gap:44px; }
+
+  section h2{
+    font-family:'Fraunces', serif; font-weight:600; font-size:22px;
+    color:var(--green-dark); margin:0 0 16px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  section h2 .num{
+    font-family:'Inter', sans-serif; font-weight:600; font-size:12.5px;
+    color:var(--gold); letter-spacing:0.06em;
+  }
+  section p{
+    font-size:15px; line-height:1.8; color:var(--ink-soft); margin:0 0 16px;
+  }
+  section p:last-child{ margin-bottom:0; }
+  section p strong{ color:var(--ink); }
+
+  hr.div{
+    border:none; border-top:1px solid var(--line); margin:0;
+  }
+
+  .cta-final{
+    background:var(--bg-warm); border-radius:20px; padding:36px 28px;
+    text-align:center; margin-top:12px;
+  }
+  .cta-final h3{ font-family:'Fraunces', serif; font-size:19px; margin:0 0 10px; }
+  .cta-final p{ font-size:13.5px; color:var(--ink-soft); margin:0 0 20px; line-height:1.6; }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    font-family:'Inter', sans-serif; font-weight:600; font-size:13.5px;
+    border-radius:100px; padding:11px 22px; cursor:pointer; border:1px solid transparent;
+    background:var(--green-dark); color:var(--gold-soft); text-decoration:none;
+  }
+
+  footer{ padding:32px 0; text-align:center; color:var(--ink-soft); font-size:12px; }
+
+  @media (max-width:640px){
+    header.hero{ padding:48px 0 40px; }
+    main{ padding:40px 0 72px; }
+    main .wrap{ gap:36px; }
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <div class="wrap">
+      <a class="logo" href="../index.html">
+        <svg class="mark" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="20" stroke="#2F4A34" stroke-width="1.6"/>
+          <circle cx="24" cy="24" r="13" stroke="#B98A2C" stroke-width="2"/>
+          <circle cx="24" cy="24" r="4.5" fill="#B98A2C"/>
+        </svg>
+        <span>Macumba</span>
+      </a>
+      <a class="back-link" href="../index.html#sobre-o-nome">‹ Voltar pro site</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Manifesto</p>
+      <h1>Macumba</h1>
+      <p>Um portal de hierofanias. Por que o nome, o que é isto, e a política que organiza o projeto.</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <section id="i">
+        <h2><span class="num">I.</span> Por que macumba</h2>
+        <p>Tem uma coisa que todo povo faz, em todo lugar, sem que um tenha ensinado ao outro: cultua quem veio antes, honra a linhagem, devolve à comunidade o que recebeu dela. Isso acontece na aldeia, na favela, na vila, no campo, não importa o continente. Ninguém precisou inventar isso a partir de nada, e ninguém tem posse sobre isso.</p>
+        <p>Essa necessidade não quer nome nenhum. Ela simplesmente se completa, do jeito que cada lugar souber fazer, com o que cada lugar tiver à mão.</p>
+        <p>"Macumba", antes de nomear qualquer religião, era o nome de um instrumento: uma taquara entalhada, tocada com duas varetas, usada para chamar as pessoas aos cultos de ancestralidade. Só depois a palavra escorregou do instrumento para o culto inteiro, e do culto para o preconceito, virando forma de chamar de feitiçaria de gente atrasada o que era, e é, sistema de conhecimento. A palavra é local, colonial em parte de sua história, específica de um tempo tentando rotular um povo. O que ela tenta nomear não é.</p>
+        <p>Fica com o nome que carrega essa história, sabendo que o nome é pequeno perto do que ele tenta apontar.</p>
+      </section>
+      <hr class="div">
+
+      <section id="ii">
+        <h2><span class="num">II.</span> O que é isto</h2>
+        <p>Macumba é um portal de hierofanias. Um lugar onde o sagrado, tal como se manifestou em todas as culturas que já existiram, pode ser encontrado, comparado, celebrado, sem que nenhuma tradição precise se curvar diante de outra para justificar seu lugar aqui.</p>
+        <p>Não é sincretismo, que dilui. Não é ecletismo, que escolhe pedaços soltos por gosto pessoal. É um cruzamento: cada tradição permanece inteira, com seu próprio peso e sua própria voz, e ainda assim se encontra com as outras no mesmo espaço, sem hierarquia entre elas.</p>
+      </section>
+      <hr class="div">
+
+      <section id="iii">
+        <h2><span class="num">III.</span> A história respira</h2>
+        <p>Nenhum causo é contado duas vezes do mesmo jeito. Isso não é defeito de quem conta, é sinal de que a história está viva.</p>
+        <p>Pergunta pra qualquer avó, pra qualquer velho de terreiro, pra qualquer repentista: a história muda de boca em boca, de festa em festa, de ano em ano. Numa versão o santo chora, noutra enfrenta tudo de cara seca. Numa, o que sumiu foi mesmo levado, noutra, era só aparência, e o de verdade ficou guardado o tempo inteiro. A variação não estraga a história, é o batimento que prova que ela ainda tem sangue: repetir não é o contrário de estar vivo, é o jeito que a vida encontra de continuar.</p>
+        <p>Cada contador, em cada canto do mundo, entrega um pouco mais do que recebeu. Cordel vira ponto, ponto vira reza, reza vira causo de novo. É esse tempero que cada boca acrescenta, e não a fiscalização de quem se acha dono da versão certa, que dá valor de verdade às histórias.</p>
+      </section>
+      <hr class="div">
+
+      <section id="iv">
+        <h2><span class="num">IV.</span> O que já se misturou não volta atrás</h2>
+        <p>A física tem um nome para isso: entropia. Uma vez que a pasta de dente sai do tubo, ela se espalha, e não existe operação no universo que a devolva à forma de antes. Não é falta de vontade, é a segunda lei da termodinâmica: sistemas tendem à desordem, não o contrário. O leite, uma vez misturado ao café, não se separa de novo sozinho.</p>
+        <p>A teoria do caos ensina outra coisa parecida: sistemas complexos, uma vez postos em movimento, se tornam irreversíveis e imprevisíveis em detalhe, mesmo que a regra que os move seja simples. Não dá pra rebobinar a fumaça de volta pro cigarro, nem o encontro de dois povos de volta ao instante antes do encontro.</p>
+        <p>As tradições sagradas são sistemas assim. Uma vez que duas culturas se tocam, trocam santo, reza, dança, ritmo, essa troca vira parte da história de ambas, para sempre. Não é possível separar de novo o que já se misturou, e fingir que é possível não é preservação, é negar a própria física do que aconteceu.</p>
+        <p>Isso não é permissão para apagar diferenças. É reconhecimento de que a mistura entre tradições já aconteceu, está acontecendo, e vai continuar acontecendo, com ou sem consentimento de quem preferiria que não acontecesse. Macumba não inventa esse trânsito. Documenta o que o povo, nos terreiros, nas encruzilhadas, nas rodas de história, já faz há séculos.</p>
+      </section>
+      <hr class="div">
+
+      <section id="v">
+        <h2><span class="num">V.</span> Confluência, não colonização</h2>
+        <p>O colonizador separa. Divide terra, divide povo, divide saber em caixinhas e diz qual caixinha vale mais. Essa é a lógica que decidiu, um dia, que existe crença "de verdade" e crença "de gente atrasada", que existe religião e existe superstição, que existe cultura e existe folclore.</p>
+        <p>Confluência é outra coisa: é o rio que recebe outro rio e segue mais forte, sem que nenhum dos dois deixe de ser água. É o modo como os povos que a colonização tentou separar, apagar e hierarquizar sempre souberam se recompor: encontrando um no outro, tecendo de novo o que foi rasgado à força.</p>
+        <p>A política do Macumba é, por isso, uma política contracolonizadora. Não colonizar é recusar decidir, de fora, qual saber é puro e qual é mistura, qual tradição precisa de defesa e qual pode ser tratada como fonte livre. É devolver às próprias tradições o direito de se encontrarem, se reconhecerem e se recomporem nos seus próprios termos, sem que ninguém de fora sirva de árbitro entre elas.</p>
+        <p>Isso tem uma armadilha, e é preciso nomear para não cair nela. Recusar colonizar não é trocar o desprezo pelo encantamento fácil. Não é tratar quem vive tradição de terreiro, de aldeia ou de vila como guardião intocado de uma sabedoria mais pura que a nossa, mais próxima da natureza, mais autêntica por ser mais antiga ou mais distante do concreto e do asfalto. Essa idealização é ainda colonização, só que de luvas: continua olhando o outro de fora, decidindo por ele o que ele deve representar, só que trocou o rótulo de atrasado pelo rótulo de sagrado exótico. Aqui, cada tradição é levada a sério como sistema de pensamento, com seus próprios erros, disputas internas, contradições e gente comum vivendo vida comum, não como cenário para a fantasia alheia de um mundo perdido e puro.</p>
+        <p>Dizer de onde uma prática vem não humilha ninguém. Em várias tradições orientais, a linhagem é o que valida quem recebe: um mestre japonês não perde autoridade ao reconhecer que sua prática atravessou a China vinda da Índia, isso é a prova de que ele pertence a algo maior que ele mesmo. É o colonizador, não a tradição, que costuma apagar a origem: extrai a prática, tira o nome de quem a fez, e vende o resultado como sabedoria universal, sem dono, sem linhagem, sem dívida. Contracolonizar aqui significa o oposto de generalizar. Não é falar em "sabedoria ancestral do Oriente" como bloco único e místico, isso é orientalismo, é apagar história real atrás de mistério de vitrine. É nomear, quando se sabe, a linhagem exata: essa prática, dessa casa, chegando por essa rota, atravessando esses povos. Precisão de origem é respeito. Generalização mística é a mesma extração de sempre, com roupa nova.</p>
+      </section>
+      <hr class="div">
+
+      <section id="vi">
+        <h2><span class="num">VI.</span> Sem hierarquia, sem posse</h2>
+        <p>Aqui, nenhuma versão de uma história é apresentada como a certa, a original ou a mais pura. São apresentadas como o que são: variações, cada uma legítima dentro de sua própria linhagem.</p>
+        <p>Isso vale para dentro das próprias tradições afro-diaspóricas quanto for preciso: um terreiro pode e deve guardar seus fundamentos com o rigor que sua linhagem exige, isso é parte de sua sobrevivência. Mas o rigor de uma casa não é medida para julgar o fundamento de outra. Macumba não é lugar de dizer qual casa está certa. É lugar de mostrar que existem muitas casas, para que cada pessoa conheça, escolha e, principalmente, aprenda a valorizar o que se ganha ao aliar camadas diferentes, em vez de diminuir uma em nome da outra.</p>
+      </section>
+      <hr class="div">
+
+      <section id="vii">
+        <h2><span class="num">VII.</span> Todas as tradições, sem exceção</h2>
+        <p>Isso não se limita às tradições afro-diaspóricas. Inclui todas: as vertentes do hinduísmo, o catolicismo popular, as cosmologias indígenas, o Tempo do Sonho aborígene australiano, que não é um passado cíclico como tantos outros, mas um presente contínuo que nunca deixou de acontecer.</p>
+        <p>São Jorge não precisa deixar de ser católico para também ser Ogum. Nenhuma imagem precisa ser retirada de cena para caber a outra ao lado.</p>
+      </section>
+      <hr class="div">
+
+      <section id="viii">
+        <h2><span class="num">VIII.</span> Direito à técnica, direito à voz</h2>
+        <p>Nenhuma tradição está condenada a permanecer congelada em uma forma supostamente pura para ser considerada legítima. O mesmo direito à técnica que qualquer pessoa tem, de usar o que sua época oferece, pertence também a quem carrega tradições ancestrais. Um saber sagrado não perde autenticidade por ser transmitido, guardado ou compartilhado através de um aplicativo.</p>
+        <p>Congelar um povo ou uma tradição numa imagem fixa do passado, como condição para reconhecê-la como verdadeira, é ferramenta de controle, não de respeito.</p>
+      </section>
+
+      <div class="cta-final">
+        <h3>Veja isso em prática</h3>
+        <p>O mapa mundial e as culturas cadastradas mostram esse cruzamento de tradições em funcionamento, com a linhagem de cada uma documentada, não generalizada.</p>
+        <a class="btn" href="../app/#historia">Explorar o mapa de raízes</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">Macumba · Terreiro Digital</div>
+  </footer>
+
+</body>
+</html>
