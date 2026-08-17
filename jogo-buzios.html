@@ -154,7 +154,7 @@ p{ margin:0; }
 }
 .oracle-card .parte-label:first-of-type{ margin-top:0; }
 
-/* ---------- ÍBÒ (confirmação sim/não) ---------- */
+/* ---------- ÍBÒ (confirmação Irê/Ibi) ---------- */
 .ibo-card{
   background:var(--green); color:#fff; border-radius: var(--radius);
   padding:18px 20px; margin-bottom:16px; text-align:center;
@@ -168,6 +168,29 @@ p{ margin:0; }
   cursor:pointer; margin-top:14px;
 }
 .ibo-btn:disabled{ opacity:0.5; cursor:default; }
+.ibo-btn-ghost{
+  background:none; border:1px solid rgba(255,255,255,0.3); color:#fff;
+}
+
+.ibo-step{ margin-top:8px; }
+.ibo-step-label{
+  font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:var(--gold-soft);
+  margin-bottom:10px; font-weight:600;
+}
+
+/* Apresentação dos dois Ibós, lado a lado, antes de embaralhar */
+.ibo-objetos{ display:flex; justify-content:center; gap:22px; margin-top:16px; }
+.ibo-objeto{ display:flex; flex-direction:column; align-items:center; gap:8px; max-width:120px; }
+.ibo-objeto-icone{
+  width:60px; height:60px; border-radius:50%;
+  background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.25);
+  display:flex; align-items:center; justify-content:center;
+}
+.ibo-objeto-icone svg{ width:34px; height:34px; }
+.ibo-objeto-nome{ font-family:'Fraunces', serif; font-size:13.5px; color:#fff; }
+.ibo-objeto-desc{ font-size:10.5px; color:#D9E2DA; line-height:1.4; }
+
+/* Mãos fechadas / reveladas */
 .ibo-maos{ display:flex; justify-content:center; gap:26px; margin-top:18px; }
 .ibo-mao{
   display:flex; flex-direction:column; align-items:center; gap:8px;
@@ -186,12 +209,34 @@ p{ margin:0; }
 .ibo-punho svg{ width:26px; height:26px; opacity:0.6; transition:opacity .3s ease; }
 .ibo-mao.revelada .ibo-punho svg{ opacity:1; }
 .ibo-mao-label{ font-size:10.5px; color:#D9E2DA; text-transform:uppercase; letter-spacing:0.04em; }
+
+/* Mini-lançamento de búzios pra decidir qual mão abre (formas simples,
+   sem repetir as imagens grandes dos búzios principais) */
+.ibo-mini-circle{
+  position:relative; width:120px; height:120px; margin:16px auto 4px;
+  border-radius:50%; background: rgba(233,220,185,0.14);
+  border:1px dashed rgba(233,220,185,0.4);
+}
+.ibo-mini-buzio{
+  position:absolute; width:14px; height:16px; border-radius:45% 45% 50% 50% / 60% 60% 40% 40%;
+  transform: translate(-50%, -50%) scale(0.3); opacity:0;
+  transition: transform 0.5s cubic-bezier(.2,.9,.3,1.2), opacity 0.3s ease;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+}
+.ibo-mini-buzio.tossed{ opacity:1; }
+.ibo-mini-buzio.aberto{ background: var(--gold-soft); }
+.ibo-mini-buzio.fechado{ background: rgba(233,220,185,0.35); }
+
 .ibo-veredito{
   margin-top:16px; font-family:'Fraunces', serif; font-size:17px; color:#fff;
   min-height:24px;
 }
-.ibo-veredito .sub{ display:block; font-family:'Inter', sans-serif; font-size:12px; color:#D9E2DA; margin-top:4px; font-weight:400; }
+.ibo-veredito .sub{ display:block; font-family:'Inter', sans-serif; font-size:12px; color:#D9E2DA; margin-top:6px; font-weight:400; line-height:1.5; }
 .ibo-veredito.ire{ color:var(--gold-soft); }
+.ibo-fechamento{
+  margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.15);
+  font-size:11.5px; color:#D9E2DA; line-height:1.55; text-align:left;
+}
 
 .progress-note{
   text-align:center; font-size:12px; color:var(--ink-soft); margin-bottom:14px;
@@ -352,10 +397,11 @@ p{ margin:0; }
 
         <div class="sobre-block">
           <span class="sobre-tag">Depois da leitura</span>
-          <h3>O Íbò, a confirmação sim/não</h3>
-          <p>Depois de qualquer consulta, dá pra pedir uma confirmação direta: o Íbò. Na tradição, o sacerdote entrega dois objetos com sentidos opostos — aqui, uma pedra (Irê, resposta positiva) e um osso (Ibi, peça atenção ou ebó) — que ficam escondidos, um em cada mão do consulente, sem que ninguém saiba qual está onde.</p>
-          <p>Quem manda abrir a mão certa não é você nem o sistema por acaso: é a própria queda dos búzios que você acabou de jogar. Por isso o botão "Consultar o Íbò" só aparece depois de uma leitura — ele usa o resultado daquela consulta pra decidir qual mão se abre, e revela o objeto que estava escondido ali.</p>
-          <p>A regra exata de qual queda pede qual mão varia de terreiro pra terreiro; aqui usamos uma regra simples (par abre a direita, ímpar abre a esquerda) só pra manter a mecânica funcionando — ajuste como preferir no código, ou trate o Íbò como uma camada extra de reflexão, não como substituto da leitura de quem tem a autoridade religiosa pra isso.</p>
+          <h3>O Íbò, a confirmação de Irê ou Ibi</h3>
+          <p>Toda consulta de búzios já aponta uma direção. O Íbò existe pra confirmar se essa direção veio em <strong>Irê</strong> (caminho favorável, forças abertas) ou em <strong>Ibi</strong> (obstáculo, advertência ou desequilíbrio que precisa ser compreendido e resolvido). É um passo de confirmação, não um jogo à parte — e não substitui a leitura, só mostra a natureza dela.</p>
+          <p>Os Ibós são objetos ritualísticos com sentidos opostos. Aqui usamos os dois mais comuns: <strong>Irê</strong> é representado por dois búzios amarrados de costas um pro outro, com as aberturas em direções opostas (como um "sanduíche"); <strong>Ibi</strong> por um osso. Cada tradição tem seus próprios elementos — esses são só dois entre muitos possíveis.</p>
+          <p>A confirmação acontece em passos: primeiro o consulente embaralha os dois Ibós entre as mãos sem olhar, deixando um em cada uma — ninguém escolhe Irê ou Ibi nesse momento, é só sorte de qual objeto foi pra qual mão. Depois, os búzios são consultados de novo (um lançamento novo, não o da leitura principal), e essa nova queda é quem indica qual mão deve ser aberta.</p>
+          <p>A mão indicada se abre e revela o objeto que estava escondido nela: se for o Irê, a resposta se confirma como favorável; se for o Ibi, confirma-se que existe algo a investigar — e é a leitura do Odu, feita antes, que já indica o quê. Em ambos os casos, o jogo não julga: ele orienta e aponta a direção. Irê e Ibi amarrados não mudam o destino, só revelam o que está no caminho.</p>
         </div>
 
         <hr class="sobre-divider">
@@ -417,7 +463,8 @@ const appState = {
   compostos: { 16: {}, 18: {}, 21: {} },         // buzios_odus_compostos, indexado por [sistema]["pai-mae"]
   jogadaAtual: 0,                 // 0 = ainda não jogou, 1 = jogou a primeira, 2 = concluído
   odusJogada: [null, null],       // [odu pai, odu mae] da consulta em andamento (sistemas de 2 jogadas)
-  ultimoTotalAbertos: 0,          // soma de búzios abertos da última consulta concluída (usado pelo Íbò)
+  ultimoTotalAbertos: 0,          // soma de búzios abertos da última consulta concluída (só informativo)
+  ibo: { esquerda: null, direita: null }, // qual Ibó (ire/ibi) está em cada mão na consulta de confirmação atual
   itans: [],                      // conteudos tipo=conto vinculados a um odu_id
   itansPorOdu: {},                // odu_id -> [itans]
   itansModo: "lista",             // "lista" ou "detalhe"
@@ -828,61 +875,142 @@ function mostrarResultado(leitura, sistema, abertosPai, abertosMae, oduPai, oduM
 }
 
 /* ==========================================================
-   ÍBÒ — confirmação sim/não com objetos ocultos nas mãos
-   O sistema esconde os dois objetos (pedra = Irê/Sim, osso = Ibi/Não)
-   nas mãos virtuais do consulente. A paridade do total de búzios
-   abertos na consulta que acabou de ser feita é o que "manda" abrir
-   uma das mãos — o jogador não escolhe, só revela.
-   (A regra exata de qual paridade abre qual mão varia de casa pra
-   casa; ajuste ehParImpar/maoParaAbrir se sua casa usar outra regra.)
+   ÍBÒ — confirmação de Irê ou Ibi
+   Fluxo (fiel ao processo tradicional, simplificado pro digital):
+   1) Os dois Ibós são apresentados: Irê (dois búzios amarrados de
+      costas um pro outro, aberturas opostas) e Ibi (um osso).
+   2) O consulente "embaralha" os dois objetos entre as mãos, sem
+      olhar — o sistema sorteia em segredo qual objeto foi pra cada
+      mão. Ninguém escolhe Irê ou Ibi nessa hora.
+   3) Um NOVO lançamento de búzios é feito (não reaproveita a
+      consulta anterior) só pra decidir qual mão deve ser aberta.
+   4) A mão indicada se abre e revela o objeto que estava escondido
+      nela — é isso que confirma Irê ou Ibi.
+   A confirmação não diz qual é o problema, só a natureza da
+   resposta; o Odu já lido antes é quem detalha o que fazer.
    ========================================================== */
 const IBO_ICONES = {
-  pedra: `<svg viewBox="0 0 32 32" fill="none"><path d="M6 21c-1-4 2-8 6-9 1-3 5-5 9-3 4 2 6 6 4 10-1 3-4 5-8 5H12c-3 0-5-1-6-3z" fill="var(--gold)"/></svg>`,
-  osso: `<svg viewBox="0 0 32 32" fill="none"><path d="M8 12a3 3 0 1 0-4 3l14 14a3 3 0 1 0 4-4L8 11z" fill="#EDE6D3" stroke="var(--ink-soft)" stroke-width="0.5"/><path d="M24 8a3 3 0 1 1 4 4L14 26a3 3 0 1 1-4-4L24 8z" fill="#EDE6D3" stroke="var(--ink-soft)" stroke-width="0.5"/></svg>`,
+  // Irê: dois búzios amarrados "de costas", aberturas opostas (uma pra cima, outra pra baixo)
+  ire: `<svg viewBox="0 0 32 32" fill="none">
+    <ellipse cx="13" cy="14" rx="7.5" ry="6" fill="#EDE6D3" stroke="var(--ink-soft)" stroke-width="0.6" transform="rotate(-18 13 14)"/>
+    <path d="M7.5 14.5c1.6-1.4 3.6-1.6 5.4 0" stroke="var(--ink-soft)" stroke-width="0.9" stroke-linecap="round"/>
+    <ellipse cx="19.5" cy="19" rx="7.5" ry="6" fill="#EDE6D3" stroke="var(--ink-soft)" stroke-width="0.6" transform="rotate(-18 19.5 19)"/>
+    <path d="M14 20.5c1.6 1.4 3.6 1.6 5.4 0" stroke="var(--ink-soft)" stroke-width="0.9" stroke-linecap="round"/>
+    <path d="M16 10 C 20 9, 22 12, 21 15" stroke="var(--gold)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M16 23 C 12 24, 10 21, 11 18" stroke="var(--gold)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  </svg>`,
+  // Ibi: um osso
+  ibi: `<svg viewBox="0 0 32 32" fill="none">
+    <path d="M8 12a3 3 0 1 0-4 3l14 14a3 3 0 1 0 4-4L8 11z" fill="#EDE6D3" stroke="var(--ink-soft)" stroke-width="0.5"/>
+    <path d="M24 8a3 3 0 1 1 4 4L14 26a3 3 0 1 1-4-4L24 8z" fill="#EDE6D3" stroke="var(--ink-soft)" stroke-width="0.5"/>
+  </svg>`,
   fechada: `<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.4" stroke-dasharray="3 4"/></svg>`,
 };
 
+const IBO_MINI_TOTAL = 8; // tamanho do mini-lançamento que decide qual mão abrir
+
 function renderIboCard() {
   return `
-    <div class="ibo-card" id="ibo-card">
+    <div class="ibo-card" id="ibo-card" data-fase="apresentacao">
       <p class="eyebrow">Confirmação</p>
       <h3>Consultar o Íbò</h3>
-      <p class="ibo-intro">Duas respostas ficam escondidas, uma em cada mão: Irê (sim) e Ibi (atenção/não). Os búzios que você acabou de jogar são quem manda abrir a mão certa — você só revela.</p>
-      <button class="ibo-btn" id="ibo-btn" onclick="consultarIbo()">Abrir a mão indicada</button>
-      <div class="ibo-maos" id="ibo-maos">
-        <div class="ibo-mao" id="ibo-mao-esquerda">
-          <div class="ibo-punho">${IBO_ICONES.fechada}</div>
-          <span class="ibo-mao-label">Esquerda</span>
+      <p class="ibo-intro">Toda consulta aponta uma direção. Os Ibós confirmam se essa direção veio em <strong>Irê</strong> (caminho favorável) ou <strong>Ibi</strong> (obstáculo, advertência ou desequilíbrio a compreender).</p>
+
+      <div class="ibo-step" id="ibo-fase-apresentacao">
+        <div class="ibo-objetos">
+          <div class="ibo-objeto">
+            <div class="ibo-objeto-icone">${IBO_ICONES.ire}</div>
+            <span class="ibo-objeto-nome">Irê</span>
+            <span class="ibo-objeto-desc">Dois búzios amarrados de costas, aberturas opostas.</span>
+          </div>
+          <div class="ibo-objeto">
+            <div class="ibo-objeto-icone">${IBO_ICONES.ibi}</div>
+            <span class="ibo-objeto-nome">Ibi</span>
+            <span class="ibo-objeto-desc">Um osso — obstáculo a ser compreendido.</span>
+          </div>
         </div>
-        <div class="ibo-mao" id="ibo-mao-direita">
-          <div class="ibo-punho">${IBO_ICONES.fechada}</div>
-          <span class="ibo-mao-label">Direita</span>
-        </div>
+        <button class="ibo-btn" id="ibo-btn-embaralhar" onclick="embaralharIbo()">Embaralhar os Ibós nas mãos</button>
       </div>
+
+      <div class="ibo-step" id="ibo-fase-maos" style="display:none;">
+        <p class="ibo-intro">Os dois Ibós foram embaralhados nas suas mãos, sem olhar. Agora os búzios precisam ser consultados de novo pra dizer qual mão abrir.</p>
+        <div class="ibo-maos" id="ibo-maos">
+          <div class="ibo-mao" id="ibo-mao-esquerda">
+            <div class="ibo-punho">${IBO_ICONES.fechada}</div>
+            <span class="ibo-mao-label">Esquerda</span>
+          </div>
+          <div class="ibo-mao" id="ibo-mao-direita">
+            <div class="ibo-punho">${IBO_ICONES.fechada}</div>
+            <span class="ibo-mao-label">Direita</span>
+          </div>
+        </div>
+        <button class="ibo-btn" id="ibo-btn-lancar" onclick="lancarBuziosIbo()">Consultar os búzios de novo</button>
+      </div>
+
+      <div class="ibo-step" id="ibo-fase-lancamento" style="display:none;">
+        <div class="ibo-mini-circle" id="ibo-mini-circle"></div>
+      </div>
+
       <p class="ibo-veredito" id="ibo-veredito"></p>
+      <div id="ibo-fechamento"></div>
     </div>
   `;
 }
 
-function consultarIbo() {
-  const btn = document.getElementById("ibo-btn");
-  btn.disabled = true;
+// Etapa 1: sorteia em segredo qual objeto foi pra cada mão.
+function embaralharIbo() {
+  appState.ibo = {
+    esquerda: Math.random() < 0.5 ? "ire" : "ibi",
+  };
+  appState.ibo.direita = appState.ibo.esquerda === "ire" ? "ibi" : "ire";
 
-  // 1) Esconde os objetos nas mãos, em ordem sorteada — o "segredo".
-  const invertido = Math.random() < 0.5;
-  const objetoEsquerda = invertido ? "osso" : "pedra";
-  const objetoDireita = invertido ? "pedra" : "osso";
+  document.getElementById("ibo-fase-apresentacao").style.display = "none";
+  document.getElementById("ibo-fase-maos").style.display = "block";
+}
 
-  // 2) A paridade do total de búzios abertos na última jogada manda
-  //    qual mão se abre (ímpar = esquerda, par = direita).
-  const total = appState.ultimoTotalAbertos || 0;
-  const maoPedida = (total % 2 !== 0) ? "esquerda" : "direita";
-  const objetoRevelado = maoPedida === "esquerda" ? objetoEsquerda : objetoDireita;
+// Etapa 2: novo lançamento de búzios (independente da consulta principal)
+// só pra decidir qual mão abrir. Paridade dos abertos: ímpar = esquerda,
+// par = direita — regra simples e ajustável conforme a casa.
+function lancarBuziosIbo() {
+  const btnLancar = document.getElementById("ibo-btn-lancar");
+  btnLancar.disabled = true;
 
-  const maoEsquerdaEl = document.getElementById("ibo-mao-esquerda");
-  const maoDireitaEl = document.getElementById("ibo-mao-direita");
-  const maoPedidaEl = maoPedida === "esquerda" ? maoEsquerdaEl : maoDireitaEl;
+  document.getElementById("ibo-fase-lancamento").style.display = "block";
+  const circle = document.getElementById("ibo-mini-circle");
+  circle.innerHTML = "";
 
+  const total = IBO_MINI_TOTAL;
+  const resultados = Array.from({ length: total }, () => Math.random() < 0.45);
+  const abertos = resultados.filter(Boolean).length;
+
+  const containerPx = 120;
+  const shellPx = 14;
+  const posicoes = gerarPosicoes(total, containerPx, shellPx);
+
+  resultados.forEach((aberto, i) => {
+    const div = document.createElement("div");
+    div.className = "ibo-mini-buzio " + (aberto ? "aberto" : "fechado");
+    const p = posicoes[i];
+    div.style.left = p.x + "px";
+    div.style.top = p.y + "px";
+    circle.appendChild(div);
+    setTimeout(() => {
+      div.style.transform = `translate(-50%, -50%) scale(1) rotate(${p.rot}deg)`;
+      div.classList.add("tossed");
+    }, 30 * i);
+  });
+
+  setTimeout(() => {
+    revelarIbo(abertos);
+  }, 30 * total + 500);
+}
+
+// Etapa 3: revela a mão indicada pelo novo lançamento.
+function revelarIbo(abertosMini) {
+  const maoPedida = (abertosMini % 2 !== 0) ? "esquerda" : "direita";
+  const objetoRevelado = appState.ibo[maoPedida];
+
+  const maoPedidaEl = document.getElementById("ibo-mao-" + maoPedida);
   maoPedidaEl.classList.add("pedida");
 
   setTimeout(() => {
@@ -890,12 +1018,15 @@ function consultarIbo() {
     maoPedidaEl.querySelector(".ibo-punho").innerHTML = IBO_ICONES[objetoRevelado];
 
     const veredito = document.getElementById("ibo-veredito");
-    if (objetoRevelado === "pedra") {
+    const fechamento = document.getElementById("ibo-fechamento");
+    if (objetoRevelado === "ire") {
       veredito.className = "ibo-veredito ire";
-      veredito.innerHTML = `Irê — resposta positiva<span class="sub">Mão ${maoPedida}, indicada pelos ${total} búzios abertos na consulta.</span>`;
+      veredito.innerHTML = `Irê — resposta favorável<span class="sub">Mão ${maoPedida}, indicada pelo novo lançamento (${abertosMini} de ${IBO_MINI_TOTAL} abertos).</span>`;
+      fechamento.innerHTML = `<p class="ibo-fechamento">A leitura acima mostra o caminho favorável — você pode seguir com mais segurança. A confirmação não resolve nada sozinha, só mostra a natureza da resposta.</p>`;
     } else {
       veredito.className = "ibo-veredito";
-      veredito.innerHTML = `Ibi — peça atenção ou ebó<span class="sub">Mão ${maoPedida}, indicada pelos ${total} búzios abertos na consulta.</span>`;
+      veredito.innerHTML = `Ibi — obstáculo ou advertência<span class="sub">Mão ${maoPedida}, indicada pelo novo lançamento (${abertosMini} de ${IBO_MINI_TOTAL} abertos).</span>`;
+      fechamento.innerHTML = `<p class="ibo-fechamento">Existe algo que precisa ser compreendido e resolvido antes de seguir — é a leitura acima que revela o quê. A confirmação não define o problema, só a natureza da resposta.</p>`;
     }
   }, 500);
 }
