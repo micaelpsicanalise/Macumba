@@ -407,12 +407,27 @@
 
         <p class="section-label" style="margin-top:8px;">Culturas afro-diaspóricas</p>
         <div id="historia-list-afro" class="list-grid">
-          <!-- renderHistoriaList() gera a partir de appState.culturas (continente === africa) -->
+          <!-- renderHistoriaList() gera a partir de culturaEhAfroDiasporica(c) -->
         </div>
 
-        <p class="section-label" style="margin-top:28px;">Outras raízes</p>
+        <p class="section-label" style="margin-top:28px;">Indígenas americanas — América do Norte</p>
+        <div id="historia-list-indigenas-norte" class="list-grid">
+          <!-- renderHistoriaList() gera a partir de continente === america-norte, não afro -->
+        </div>
+
+        <p class="section-label" style="margin-top:28px;">Indígenas americanas — América Central</p>
+        <div id="historia-list-indigenas-central" class="list-grid">
+          <!-- renderHistoriaList() gera a partir de continente === america-central-caribe, não afro -->
+        </div>
+
+        <p class="section-label" style="margin-top:28px;">Indígenas americanas — América do Sul</p>
+        <div id="historia-list-indigenas-sul" class="list-grid">
+          <!-- renderHistoriaList() gera a partir de continente === america-sul, não afro -->
+        </div>
+
+        <p class="section-label" style="margin-top:28px;">Outras culturas</p>
         <div id="historia-list-outras" class="list-grid">
-          <!-- renderHistoriaList() gera a partir de appState.culturas (continente !== africa) -->
+          <!-- renderHistoriaList() gera a partir do que sobra: europa, asia, oceania, oriente-medio, siberia -->
         </div>
       </div>
 
@@ -741,29 +756,34 @@
   }
 
   // Divide a lista (já filtrada por continente, se houver filtro ativo) em
-  // dois blocos: raízes afro-diaspóricas (calculado via culturaEhAfroDiasporica)
-  // e o restante (outras raízes que também usam matéria pra manifestar o
-  // sagrado — hierofania, fora do eixo afro: mongóis, ainu, aborígenes
-  // australianos etc.).
+  // 5 blocos: raízes afro-diaspóricas (calculado via culturaEhAfroDiasporica,
+  // não pelo continente puro — ver comentário da função acima), indígenas
+  // americanas separadas por América do Norte / Central / Sul, e por fim
+  // "outras culturas" — tudo que não é americano nem afro-diaspórico
+  // (Europa, Ásia, Oceania, Oriente Médio, Sibéria): mongóis, ainu,
+  // aborígenes australianos etc.
   function renderHistoriaList() {
     renderHistoriaContinenteFilters();
     const base = appState.historiaContinente === "todos"
       ? appState.culturas
       : appState.culturas.filter(c => c.continente === appState.historiaContinente);
 
-    const afro = base.filter(c => culturaEhAfroDiasporica(c));
-    const outras = base.filter(c => !culturaEhAfroDiasporica(c));
+    const naoAfro = base.filter(c => !culturaEhAfroDiasporica(c));
 
-    const containerAfro = document.getElementById("historia-list-afro");
-    const containerOutras = document.getElementById("historia-list-outras");
+    const grupos = {
+      "historia-list-afro": base.filter(c => culturaEhAfroDiasporica(c)),
+      "historia-list-indigenas-norte": naoAfro.filter(c => c.continente === "america-norte"),
+      "historia-list-indigenas-central": naoAfro.filter(c => c.continente === "america-central-caribe"),
+      "historia-list-indigenas-sul": naoAfro.filter(c => c.continente === "america-sul"),
+      "historia-list-outras": naoAfro.filter(c => !["america-norte", "america-central-caribe", "america-sul"].includes(c.continente)),
+    };
 
-    containerAfro.innerHTML = afro.length
-      ? afro.map(itemCultura).join("")
-      : `<p class="empty-note">Nenhuma cultura cadastrada ainda.</p>`;
-
-    containerOutras.innerHTML = outras.length
-      ? outras.map(itemCultura).join("")
-      : `<p class="empty-note">Nenhuma cultura cadastrada ainda.</p>`;
+    Object.entries(grupos).forEach(([containerId, lista]) => {
+      const container = document.getElementById(containerId);
+      container.innerHTML = lista.length
+        ? lista.map(itemCultura).join("")
+        : `<p class="empty-note">Nenhuma cultura cadastrada ainda.</p>`;
+    });
   }
 
 
