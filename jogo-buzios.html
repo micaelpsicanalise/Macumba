@@ -131,6 +131,70 @@ p{ margin:0; }
   border:1.5px dashed var(--gold); opacity:0.85;
 }
 
+.manifesto-lab{
+  background: var(--card);
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  padding:22px 20px;
+  margin-bottom:24px;
+}
+.manifesto-lab p{
+  font-family:'Inter', sans-serif; font-size:14px; line-height:1.6;
+  color: var(--ink-soft); margin:0 0 12px;
+}
+.manifesto-lab p:last-child{ margin-bottom:0; }
+.manifesto-lab code{
+  background: var(--gold-soft); color: var(--ink);
+  padding:1px 5px; border-radius:4px; font-size:13px;
+}
+.manifesto-titulo{
+  font-family:'Fraunces', serif !important; font-size:19px !important;
+  font-weight:500; color: var(--ink) !important; line-height:1.3 !important;
+}
+
+.tradicao-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap:12px;
+  margin:16px 0 28px;
+}
+.tradicao-card{
+  background: var(--card);
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  padding:18px 12px;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  cursor:pointer;
+  transition: transform .15s ease, border-color .15s ease;
+  font-family:'Inter', sans-serif;
+}
+.tradicao-card:hover{ transform: translateY(-2px); border-color: var(--gold); }
+.tradicao-card.active{ border-color: var(--gold); background: var(--gold-soft); }
+.tradicao-icone{ font-size:26px; }
+.tradicao-nome{ font-weight:600; color: var(--ink); font-size:14px; text-align:center; }
+.tradicao-regiao{ font-size:11px; color: var(--ink-soft); text-align:center; }
+
+.lab-intro{
+  font-family:'Inter', sans-serif; font-size:13px; color: var(--ink-soft);
+  line-height:1.5; margin:0 0 16px;
+}
+.aviso-simulacao{
+  font-family:'Inter', sans-serif; font-size:12px; color: var(--ink-soft);
+  background: var(--gold-soft); border-radius:10px; padding:10px 12px;
+  margin:0 0 10px;
+}
+.tradicao-em-construcao{
+  font-family:'Inter', sans-serif; font-size:14px; color: var(--ink-soft);
+  text-align:center; padding:40px 20px;
+}
+.buzios-lab-circle{
+  position:relative; width:100%; max-width:300px; aspect-ratio: 1 / 1;
+  margin:0 auto 16px; border-radius:50%;
+  background: var(--cesta-url) center/cover no-repeat;
+  box-shadow: 0 10px 24px rgba(30,42,32,0.20);
+}
+.buzio.clicavel{ pointer-events:auto; cursor:pointer; opacity:1; transform: translate(-50%, -50%) scale(1); }
+
 .stat-row{ display:flex; gap:10px; margin-bottom:16px; }
 .stat{
   flex:1; background:var(--card); border:1px solid var(--line);
@@ -298,6 +362,7 @@ p{ margin:0; }
   <a href="index.html" class="brand" style="text-decoration:none;"><span class="mark"></span>Terreiro Digital</a>
   <div class="nav-links">
     <a href="index.html" class="nav-link" style="text-decoration:none;">‹ Site</a>
+    <button class="nav-link" data-view="laboratorio" onclick="showView('laboratorio')">Laboratório</button>
     <button class="nav-link active" data-view="lancar" onclick="showView('lancar')">Lançar</button>
     <button class="nav-link" data-view="historico" onclick="showView('historico')">Histórico</button>
     <button class="nav-link" data-view="sobre" onclick="showView('sobre')">Sobre</button>
@@ -306,6 +371,57 @@ p{ margin:0; }
 </nav>
 
 <main class="site-main">
+
+    <!-- ================= LABORATÓRIO DE HIEROFANIA ================= -->
+    <section id="view-laboratorio" class="view">
+      <div class="top-row">
+        <span class="greeting">Laboratório de Hierofania</span>
+      </div>
+
+      <div class="manifesto-lab">
+        <p class="manifesto-titulo">A matéria fala. O algoritmo não.</p>
+        <p>Este espaço se recusa a jogar por você. Um <code>Math.random()</code> não senta no jirau, não recebe o axé, não carrega anos de iniciação nas mãos. A leitura do búzio, do osso, da folha de chá ou da moeda de I Ching é um ato litúrgico, e o litúrgico exige corpo, presença e um sacerdote que a comunidade reconhece. Nenhuma tela substitui isso, e fingir o contrário é dessacralizar a técnica e servir a "moral do conquistado", aquela que reduz tecnologias ancestrais de leitura do real a curiosidade de app.</p>
+        <p>O que existe aqui é outra coisa, um laboratório de decifração da matéria. Seis povos, seis formas de ler geometria, acaso e padrão no concreto, isso é hierofania, o sagrado se manifestando através do físico. Você pode montar configurações com as próprias mãos, gerar um padrão aleatório só para estudo, e abrir o mito e a leitura psicanalítica associados a ele. Nada disso é uma consulta. É treino de olhar.</p>
+        <p>Se você busca uma consulta real, procure quem foi feito para isso, um sacerdote, um iniciado, alguém com o axé assentado. Se busca entender como o Ifá, as runas, os Dogon, o chá, o I Ching e o Tarô organizam o caos em símbolo, este é o lugar.</p>
+      </div>
+
+      <p class="section-label">Escolha uma tradição para estudar</p>
+
+      <div class="tradicao-grid" id="tradicao-grid">
+        <button class="tradicao-card active" data-tradicao="buzios" onclick="abrirTradicao('buzios')">
+          <span class="tradicao-icone">🐚</span>
+          <span class="tradicao-nome">Búzios</span>
+          <span class="tradicao-regiao">Diáspora africana</span>
+        </button>
+        <button class="tradicao-card" data-tradicao="runas" onclick="abrirTradicao('runas')">
+          <span class="tradicao-icone">ᚱ</span>
+          <span class="tradicao-nome">Runas</span>
+          <span class="tradicao-regiao">Nórdica</span>
+        </button>
+        <button class="tradicao-card" data-tradicao="dogon" onclick="abrirTradicao('dogon')">
+          <span class="tradicao-icone">🦊</span>
+          <span class="tradicao-nome">Pegadas na areia</span>
+          <span class="tradicao-regiao">Dogon, Mali</span>
+        </button>
+        <button class="tradicao-card" data-tradicao="tasseografia" onclick="abrirTradicao('tasseografia')">
+          <span class="tradicao-icone">🍵</span>
+          <span class="tradicao-nome">Tasseografia</span>
+          <span class="tradicao-regiao">Ásia e Europa</span>
+        </button>
+        <button class="tradicao-card" data-tradicao="iching" onclick="abrirTradicao('iching')">
+          <span class="tradicao-icone">☯</span>
+          <span class="tradicao-nome">I Ching</span>
+          <span class="tradicao-regiao">China</span>
+        </button>
+        <button class="tradicao-card" data-tradicao="tarot" onclick="abrirTradicao('tarot')">
+          <span class="tradicao-icone">🃏</span>
+          <span class="tradicao-nome">Tarô arquetípico</span>
+          <span class="tradicao-regiao">Global, leitura junguiana</span>
+        </button>
+      </div>
+
+      <div id="tradicao-conteudo"></div>
+    </section>
 
     <!-- ================= LANÇAR ================= -->
     <section id="view-lancar" class="view active">
@@ -580,6 +696,156 @@ function getLeituraComposta(sistema, oduPai, oduMae, abertosPai, abertosMae) {
 }
 
 /* ==========================================================
+   LABORATÓRIO DE HIEROFANIA
+   Estudo manual/geométrico dos sinais, sem caráter de consulta.
+   Cada tradição tem seu próprio render, registrado em TRADICOES.
+   ========================================================== */
+let labSistema = 16;   // sistema de búzios usado no laboratório (independe da aba Lançar)
+let labBuzios = [];    // array de booleans, true = aberto, um por búzio na roda do laboratório
+
+const TRADICOES = {
+  buzios: renderLabBuzios,
+  runas: (c) => renderLabEmConstrucao(c, "Runas nórdicas"),
+  dogon: (c) => renderLabEmConstrucao(c, "Pegadas na areia dos Dogon"),
+  tasseografia: (c) => renderLabEmConstrucao(c, "Tasseografia"),
+  iching: (c) => renderLabEmConstrucao(c, "I Ching"),
+  tarot: (c) => renderLabEmConstrucao(c, "Tarô arquetípico"),
+};
+
+function abrirTradicao(nome) {
+  document.querySelectorAll(".tradicao-card").forEach(c => {
+    c.classList.toggle("active", c.dataset.tradicao === nome);
+  });
+  const container = document.getElementById("tradicao-conteudo");
+  container.innerHTML = "";
+  TRADICOES[nome](container);
+}
+
+function renderLabEmConstrucao(container, nomeTradicao) {
+  container.innerHTML = `
+    <div class="tradicao-em-construcao">
+      Módulo de estudo de "${nomeTradicao}" ainda em construção.<br>
+      Conteúdo e leitura simbólica em pesquisa.
+    </div>
+  `;
+}
+
+function renderLabBuzios(container) {
+  labSistema = 16;
+  const cfg = SISTEMAS[labSistema];
+  labBuzios = Array.from({ length: cfg.total }, () => false);
+
+  container.innerHTML = `
+    <p class="lab-intro">
+      Clique nos búzios pra abrir ou fechar cada um manualmente e estudar
+      qual Odu se forma, ou gere uma configuração aleatória pra estudo.
+      Nada aqui é uma consulta.
+    </p>
+    <div class="filters" id="lab-sistema-filters">
+      <div class="filter" data-sistema="4" onclick="setSistemaLab(this, 4)">4 búzios · Alafiá</div>
+      <div class="filter active" data-sistema="16" onclick="setSistemaLab(this, 16)">16 búzios</div>
+      <div class="filter" data-sistema="18" onclick="setSistemaLab(this, 18)">18 búzios</div>
+      <div class="filter" data-sistema="21" onclick="setSistemaLab(this, 21)">21 búzios · Angola</div>
+    </div>
+    <div class="buzios-lab-circle" id="buzios-lab-circle"></div>
+    <button class="clear-btn" style="width:100%; margin-top:4px;" onclick="gerarConfiguracaoAleatoriaEstudo()">
+      🎲 Gerar configuração aleatória para estudo
+    </button>
+    <div id="lab-resultado-area"></div>
+  `;
+
+  desenharBuziosLab();
+}
+
+function setSistemaLab(el, valor) {
+  document.querySelectorAll("#lab-sistema-filters .filter").forEach(f => f.classList.remove("active"));
+  el.classList.add("active");
+  labSistema = valor;
+  const cfg = SISTEMAS[labSistema];
+  labBuzios = Array.from({ length: cfg.total }, () => false);
+  desenharBuziosLab();
+}
+
+function desenharBuziosLab() {
+  const circle = document.getElementById("buzios-lab-circle");
+  if (!circle) return;
+  circle.innerHTML = "";
+  const shellPx = labBuzios.length > 16 ? 26 : (labBuzios.length > 8 ? 30 : 34);
+  const shellAltura = Math.round(shellPx * 1.15);
+  const posicoes = gerarPosicoes(labBuzios.length, circle.clientWidth, shellPx, shellAltura, 0.78);
+
+  labBuzios.forEach((aberto, i) => {
+    const div = document.createElement("div");
+    div.className = "buzio clicavel " + (aberto ? "aberto" : "fechado");
+    const p = posicoes[i];
+    div.style.width = shellPx + "px";
+    div.style.height = shellAltura + "px";
+    div.style.left = p.x + "px";
+    div.style.top = p.y + "px";
+    div.style.transform = `translate(-50%, -50%) rotate(${p.rot}deg)`;
+    div.onclick = () => {
+      labBuzios[i] = !labBuzios[i];
+      desenharBuziosLab();
+    };
+    circle.appendChild(div);
+  });
+
+  atualizarLeituraLab();
+}
+
+function atualizarLeituraLab() {
+  const area = document.getElementById("lab-resultado-area");
+  if (!area) return;
+  const abertos = labBuzios.filter(Boolean).length;
+  const odu = getOdu(labSistema, abertos);
+  area.innerHTML = `
+    <div class="oracle-card">
+      <p class="eyebrow">Configuração de estudo · ${abertos} de ${labBuzios.length} abertos</p>
+      <h3>${odu.nome}</h3>
+      <p class="texto">${odu.leitura}</p>
+      ${odu.generico ? '<p class="edit-note">Leitura ainda incompleta pra essa queda, cadastre no painel admin.</p>' : ""}
+      <p class="edit-note">Estudo do padrão arquetípico, não é consulta oracular.</p>
+    </div>
+  `;
+}
+
+// Reaproveita a mesma animação de queda física do lançamento tradicional,
+// mas o rótulo e o aviso deixam explícito que é simulação para estudo,
+// e o resultado continua editável a mão depois de cair.
+function gerarConfiguracaoAleatoriaEstudo() {
+  const circle = document.getElementById("buzios-lab-circle");
+  const total = labBuzios.length;
+  const resultados = Array.from({ length: total }, () => Math.random() < 0.45);
+  labBuzios = resultados;
+
+  circle.innerHTML = "";
+  const shellPx = total > 16 ? 26 : (total > 8 ? 30 : 34);
+  const shellAltura = Math.round(shellPx * 1.15);
+  const posicoes = gerarPosicoes(total, circle.clientWidth, shellPx, shellAltura, 0.78);
+
+  resultados.forEach((aberto, i) => {
+    const div = document.createElement("div");
+    div.className = "buzio " + (aberto ? "aberto" : "fechado");
+    const p = posicoes[i];
+    div.style.width = shellPx + "px";
+    div.style.height = shellAltura + "px";
+    div.style.left = p.x + "px";
+    div.style.top = p.y + "px";
+    circle.appendChild(div);
+    setTimeout(() => {
+      div.style.transform = `translate(-50%, -50%) scale(1) rotate(${p.rot}deg)`;
+      div.classList.add("tossed", "clicavel");
+      div.onclick = () => {
+        labBuzios[i] = !labBuzios[i];
+        desenharBuziosLab();
+      };
+    }, 25 * i);
+  });
+
+  setTimeout(atualizarLeituraLab, 25 * total + 300);
+}
+
+/* ==========================================================
    PERSISTÊNCIA (localStorage)
    ========================================================== */
 function carregarHistorico() {
@@ -620,6 +886,9 @@ function showView(name) {
   window.scrollTo({ top: 0, behavior: "auto" });
   if (name === "historico") renderHistorico();
   if (name === "itans") { appState.itansModo = "lista"; renderItansLista(); }
+  if (name === "laboratorio" && !document.getElementById("tradicao-conteudo").childElementCount) {
+    abrirTradicao("buzios");
+  }
 }
 
 function setSistema(el, valor) {
